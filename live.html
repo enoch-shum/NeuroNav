@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroNav — Live Telemetry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root{
+    --bg:#05070D;
+    --panel:#0B1020;
+    --panel-2:#10172B;
+    --line:rgba(244,244,247,0.14);
+    --ink:#F4F4F7;
+    --ink-soft:#9AA3BC;
+    --rust:#E4433D;
+    --rust-deep:#9E1B2E;
+    --warn:#F2A0A0;
+    --alert:#E4433D;
+    --danger:#8C1327;
+    --ok:#4ADE80;
+    --stale:#F2A0A0;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:100px 24px 60px;
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.serif{
+    font-family:'Fraunces',Georgia,serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+  a{color:inherit;text-decoration:none;}
+  ::selection{background:var(--rust);color:var(--ink);}
+
+  /* ---------- rotating brain background ---------- */
+  #brain-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+  .bg-glow{
+    position:fixed;top:-20%;right:-10%;width:60vw;height:60vw;
+    background:radial-gradient(circle, rgba(228,67,61,0.10), transparent 65%);
+    z-index:0;pointer-events:none;
+  }
+  .p-ring{
+    position:fixed;left:50%;top:50%;
+    border:1px solid rgba(228,67,61,0.2);
+    border-radius:50%;
+    z-index:0;pointer-events:none;
+  }
+  #ring1{animation:ringSpin 90s linear infinite;}
+  #ring2{animation:ringSpin 130s linear infinite reverse;}
+  @keyframes ringSpin{from{transform:translate(-50%,-50%) rotate(0deg);}to{transform:translate(-50%,-50%) rotate(360deg);}}
+
+  /* ---------- fixed nav (same as index.html) ---------- */
+  .site-nav{
+    position:fixed;
+    top:0;left:0;right:0;
+    z-index:50;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px clamp(20px,5vw,56px);
+    background:rgba(5,7,13,0.45);
+    backdrop-filter:blur(5px);
+    -webkit-backdrop-filter:blur(5px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-mark{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--ink);}
+  .nav-mark span{color:var(--rust);}
+  .nav-links{display:flex;align-items:center;gap:28px;font-size:13.5px;color:rgba(244,244,247,0.75);}
+  .nav-links a:hover{color:var(--ink);}
+  .nav-cta{
+    padding:9px 18px;
+    background:var(--rust-deep);
+    color:#fff !important;
+    border-radius:999px;
+    font-weight:500;
+  }
+  .nav-cta:hover{background:var(--rust);}
+  @media (max-width:680px){ .nav-links a:not(.nav-cta){display:none;} }
+
+  .wrap{max-width:1100px;margin:0 auto;position:relative;z-index:1;}
+
+  /* ---------- page header ---------- */
+  header{
+    display:flex;flex-wrap:wrap;gap:18px;
+    justify-content:space-between;align-items:flex-end;
+    margin-bottom:26px;
+    padding-bottom:22px;
+    border-bottom:1px solid var(--line);
+  }
+  .brand-mark{font-size:24px;font-weight:600;}
+  .brand-mark span{color:var(--rust);}
+  .eyebrow{
+    font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;
+    color:var(--rust);margin-bottom:6px;display:block;
+  }
+
+  /* ---------- glass surface, shared by the connection bar, cards, raw-feed panel ---------- */
+  .glass{
+    background:rgba(255,255,255,0.045);
+    backdrop-filter:blur(3px) saturate(160%);
+    -webkit-backdrop-filter:blur(3px) saturate(160%);
+    border:1px solid rgba(244,244,247,0.14);
+    box-shadow:0 8px 32px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(244,244,247,0.08);
+  }
+
+  .conn-bar{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    border-radius:999px;padding:8px 8px 8px 16px;
+  }
+  .conn-dot{width:9px;height:9px;border-radius:50%;background:var(--ink-soft);flex-shrink:0;}
+  .conn-dot.connecting{background:var(--warn);animation:pulse 1s ease-in-out infinite;}
+  .conn-dot.connected{background:var(--ok);box-shadow:0 0 10px 2px rgba(74,222,128,0.5);}
+  .conn-dot.stale{background:var(--stale);animation:pulse 1s ease-in-out infinite;}
+  .conn-dot.disconnected{background:var(--rust-deep);}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+  .conn-label{font-size:13px;color:var(--ink-soft);min-width:150px;}
+  .conn-bar input{
+    background:rgba(255,255,255,0.06);border:1px solid var(--line);color:var(--ink);
+    border-radius:999px;padding:7px 14px;font-size:13px;font-family:'SF Mono',Menlo,monospace;
+    width:190px;
+  }
+  .conn-bar input:focus{outline:none;border-color:var(--rust);}
+  .conn-bar button{
+    background:var(--rust-deep);color:#fff;border:none;border-radius:999px;
+    padding:8px 18px;font-size:13px;font-weight:500;cursor:pointer;
+    transition:background 0.2s;
+  }
+  .conn-bar button:hover{background:var(--rust);}
+  .rate{font-size:11.5px;color:var(--ink-soft);font-family:monospace;padding-right:6px;}
+
+  /* ---------- faint alert banner — kept solid/opaque on purpose (safety-critical, must stay legible over anything) ---------- */
+  .faint-banner{
+    display:none;
+    align-items:center;gap:16px;
+    background:linear-gradient(90deg, var(--danger), var(--rust-deep));
+    border-radius:18px;padding:20px 26px;margin-bottom:22px;
+    box-shadow:0 0 40px -8px rgba(228,67,61,0.7);
+    animation:bannerPulse 1.1s ease-in-out infinite;
+  }
+  .faint-banner.show{display:flex;}
+  @keyframes bannerPulse{0%,100%{box-shadow:0 0 30px -8px rgba(228,67,61,0.6);}50%{box-shadow:0 0 54px -4px rgba(228,67,61,0.95);}}
+  .faint-banner .icon{font-size:30px;line-height:1;}
+  .faint-banner .text b{display:block;font-size:17px;font-family:'Fraunces',serif;font-weight:600;}
+  .faint-banner .text span{font-size:13px;opacity:0.85;}
+
+  /* ---------- stat grid ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));
+    gap:14px;
+  }
+  .card{
+    border-radius:22px;padding:22px;
+    transition:border-color 0.3s, transform 0.25s;
+  }
+  .card:hover{border-color:rgba(228,67,61,0.4);transform:translateY(-2px);}
+  .card .label{font-size:11px;text-transform:uppercase;letter-spacing:0.07em;color:var(--ink-soft);margin-bottom:12px;}
+  .card .value{font-family:'Fraunces',serif;font-size:32px;font-weight:600;font-variant-numeric:tabular-nums;}
+  .card .value small{font-family:'Inter';font-size:14px;font-weight:400;color:var(--ink-soft);margin-left:5px;}
+  .card .sub{font-size:12.5px;color:var(--ink-soft);margin-top:8px;}
+
+  .bar-track{height:7px;border-radius:999px;background:rgba(255,255,255,0.08);margin-top:14px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:999px;width:0%;transition:width 0.15s linear, background 0.2s ease, box-shadow 0.2s ease;}
+
+  /* ---------- posture bar (row 1) ---------- */
+  .posture-bar{
+    display:flex;align-items:center;gap:16px;
+    border-radius:999px;padding:16px 26px;margin-bottom:14px;
+  }
+  .posture-dot{width:14px;height:14px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px 2px rgba(74,222,128,0.5);flex-shrink:0;}
+  .posture-dot.fainted{background:var(--danger);box-shadow:0 0 12px 3px rgba(140,19,39,0.7);}
+  .posture-text{display:flex;align-items:baseline;gap:10px;}
+  .posture-label{font-size:11px;text-transform:uppercase;letter-spacing:0.07em;color:var(--ink-soft);}
+  .posture-value{font-family:'Fraunces',serif;font-size:22px;font-weight:600;}
+  .posture-sub{font-size:12.5px;color:var(--ink-soft);margin-left:auto;}
+
+  /* ---------- main two-column layout: 2x2 stat grid | tall head-tilt card ---------- */
+  .main-layout{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    align-items:stretch;
+  }
+  .left-stats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:1fr 1fr;
+    gap:14px;
+  }
+  .head-tilt-card{display:flex;flex-direction:column;justify-content:center;}
+  @media (max-width:760px){
+    .main-layout{grid-template-columns:1fr;}
+  }
+
+  .zone-tag{
+    display:inline-block;font-size:11px;font-weight:600;padding:4px 12px;
+    border-radius:999px;margin-top:12px;letter-spacing:0.02em;
+  }
+  .zone-clear{background:rgba(154,163,188,0.2);color:var(--ink-soft);}
+  .zone-warn{background:rgba(242,160,160,0.2);color:var(--warn);}
+  .zone-alert{background:rgba(228,67,61,0.22);color:var(--alert);}
+  .zone-danger{background:rgba(140,19,39,0.38);color:#ff8f8f;}
+
+  /* ---------- attitude indicator ---------- */
+  .attitude{display:flex;justify-content:center;align-items:center;margin-top:8px;}
+  .attitude svg{width:118px;height:118px;}
+
+  /* ---------- raw feed ---------- */
+  details{margin-top:22px;border-radius:20px;}
+  summary{padding:15px 22px;cursor:pointer;font-size:13px;color:var(--ink-soft);user-select:none;}
+  summary:hover{color:var(--ink);}
+  pre{
+    margin:0;padding:0 22px 20px;font-size:12px;line-height:1.6;
+    color:var(--ink-soft);white-space:pre-wrap;word-break:break-all;
+    max-height:220px;overflow-y:auto;font-family:'SF Mono',Menlo,monospace;
+  }
+
+  .footer-note{margin-top:20px;font-size:12.5px;color:var(--ink-soft);}
+  .footer-note code{background:rgba(255,255,255,0.06);padding:2px 7px;border-radius:5px;color:var(--rust);}
+</style>
+</head>
+<body>
+
+<canvas id="brain-canvas"></canvas>
+<div class="bg-glow"></div>
+<div class="p-ring" id="ring1" style="width:560px;height:560px;margin:-280px 0 0 -280px;"></div>
+<div class="p-ring" id="ring2" style="width:820px;height:820px;margin:-410px 0 0 -410px;"></div>
+
+<nav class="site-nav">
+  <a href="index.html" class="nav-mark">Neuro<span>Nav</span></a>
+  <div class="nav-links">
+    <a href="index.html#hardware">Technology</a>
+    <a href="index.html#demo">Demo</a>
+    <a href="index.html#demo" class="nav-cta">Live Simulation</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <header>
+    <div>
+      <span class="eyebrow">Live simulation</span>
+      <h1 class="brand-mark">Neuro<span>Nav</span> — Live Telemetry</h1>
+    </div>
+    <div class="conn-bar glass">
+      <div class="conn-dot" id="connDot"></div>
+      <div class="conn-label" id="connLabel">Not connected</div>
+      <input type="text" id="wsUrlInput" value="172.20.10.11:81" spellcheck="false">
+      <button id="connectBtn">Connect</button>
+      <span class="rate" id="rateLabel"></span>
+    </div>
+  </header>
+
+  <div class="faint-banner" id="faintBanner">
+    <div class="icon">⚠</div>
+    <div class="text">
+      <b>Faint detected</b>
+      <span id="faintSub">Rapid head slump — check on the wearer</span>
+    </div>
+  </div>
+
+  <div class="posture-bar glass">
+    <span class="posture-dot" id="postureDot"></span>
+    <div class="posture-text">
+      <span class="posture-label">Posture</span>
+      <span class="posture-value" id="postureText">—</span>
+    </div>
+    <span class="posture-sub" id="postureSub">Waiting for data…</span>
+  </div>
+
+  <div class="main-layout">
+
+    <div class="left-stats">
+
+      <div class="card glass">
+        <div class="label">Distance to obstacle</div>
+        <div class="value"><span id="distanceValue">—</span><small>cm</small></div>
+        <div class="bar-track"><div class="bar-fill" id="distanceBar" style="background:var(--ink-soft);"></div></div>
+        <span class="zone-tag zone-clear" id="distanceZone">—</span>
+      </div>
+
+      <div class="card glass">
+        <div class="label">Motor duty</div>
+        <div class="value"><span id="motorValue">—</span><small>%</small></div>
+        <div class="bar-track"><div class="bar-fill" id="motorBar" style="background:var(--rust);"></div></div>
+        <div class="sub" id="motorSub">PWM 0–255</div>
+      </div>
+
+      <div class="card glass">
+        <div class="label">Tilt magnitude</div>
+        <div class="value"><span id="tiltValue">—</span><small>&deg;</small></div>
+        <div class="bar-track"><div class="bar-fill" id="tiltBar" style="background:var(--rust);"></div></div>
+        <div class="sub">Faint threshold: 32&deg;</div>
+      </div>
+
+      <div class="card glass">
+        <div class="label">Gyro motion</div>
+        <div class="value"><span id="gyroValue">—</span><small>&deg;/s</small></div>
+        <div class="bar-track"><div class="bar-fill" id="gyroBar" style="background:var(--rust);"></div></div>
+        <div class="sub">Faint threshold: 75&deg;/s</div>
+      </div>
+
+    </div>
+
+    <div class="card glass head-tilt-card">
+      <div class="label">Head tilt (from level)</div>
+      <div class="attitude">
+        <svg viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="var(--line)" stroke-width="1"/>
+          <line x1="60" y1="8" x2="60" y2="112" stroke="var(--line)" stroke-width="1"/>
+          <line x1="8" y1="60" x2="112" y2="60" stroke="var(--line)" stroke-width="1"/>
+          <g id="tiltDot">
+            <circle cx="60" cy="60" r="6" fill="var(--rust)"/>
+          </g>
+        </svg>
+      </div>
+      <div class="sub"><span id="pitchValue">0.0</span>&deg; pitch &nbsp;·&nbsp; <span id="rollValue">0.0</span>&deg; roll</div>
+    </div>
+
+  </div>
+
+  <details class="glass">
+    <summary>Raw JSON feed</summary>
+    <pre id="rawFeed">Waiting for messages…</pre>
+  </details>
+
+  <p class="footer-note">
+    Connecting to <code id="urlEcho">ws://172.20.10.11:81/</code>. Laptop must be on the same
+    WiFi/hotspot as the ESP32. This page runs entirely locally — no data leaves your machine.
+  </p>
+
+</div>
+
+<script>
+/* ============================================================
+   ROTATING BRAIN + STARFIELD BACKGROUND
+   (same construction as index.html's hero: SDF-sampled points on
+   a brain-shaped surface, connected to nearest neighbors)
+============================================================ */
+(function(){
+  const canvas = document.getElementById('brain-canvas');
+  let width = window.innerWidth, height = window.innerHeight;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(48, width/height, 0.1, 100);
+  camera.position.set(0, 0, 9.5);
+
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(width, height);
+
+  const group = new THREE.Group();
+  scene.add(group);
+
+  function sdSphere(x,y,z, cx,cy,cz, r){
+    const dx=x-cx,dy=y-cy,dz=z-cz;
+    return Math.sqrt(dx*dx+dy*dy+dz*dz)-r;
+  }
+  function sdEllipsoid(x,y,z, cx,cy,cz, rx,ry,rz){
+    const nx=(x-cx)/rx, ny=(y-cy)/ry, nz=(z-cz)/rz;
+    const k = Math.sqrt(nx*nx+ny*ny+nz*nz);
+    return (k-1)*Math.min(rx,Math.min(ry,rz));
+  }
+  function sdCapsule(x,y,z, ax,ay,az, bx,by,bz, r){
+    const pax=x-ax,pay=y-ay,paz=z-az;
+    const bax=bx-ax,bay=by-ay,baz=bz-az;
+    const bb = bax*bax+bay*bay+baz*baz;
+    let h = bb>0 ? (pax*bax+pay*bay+paz*baz)/bb : 0;
+    h = Math.max(0, Math.min(1,h));
+    const dx=pax-bax*h, dy=pay-bay*h, dz=paz-baz*h;
+    return Math.sqrt(dx*dx+dy*dy+dz*dz)-r;
+  }
+  function brainSDF(x,y,z){
+    const dMain = sdEllipsoid(x,y,z, 0,0.28,0, 1.55,1.05,0.92);
+    const dFrontal = sdSphere(x,y,z, 1.18,0.55,0, 0.56);
+    const dOccipital = sdSphere(x,y,z, -1.28,0.32,0, 0.52);
+    const dTemporal = sdEllipsoid(x,y,z, 0.22,-0.38,0, 0.66,0.46,0.6);
+    const dCerebellum = sdSphere(x,y,z, -0.55,-0.78,-0.02, 0.42);
+    const dStem = sdCapsule(x,y,z, 0.32,-0.82,0, 0.14,-1.6,0, 0.15);
+    return Math.min(dMain, dFrontal, dOccipital, dTemporal, dCerebellum, dStem);
+  }
+
+  const NODE_COUNT = 460;
+  const pts = [];
+  let attempts = 0;
+  while(pts.length < NODE_COUNT && attempts < 500000){
+    attempts++;
+    const x = (Math.random()*4.6-2.3);
+    const y = (Math.random()*4.0-2.1);
+    const z = (Math.random()*2.8-1.4);
+    if(Math.abs(brainSDF(x,y,z)) < 0.045) pts.push([x,y,z]);
+  }
+
+  const edgeSet = new Set();
+  const edges = [];
+  const K = 3, MAX_DIST = 0.55;
+  for(let i=0;i<pts.length;i++){
+    const dists = [];
+    for(let j=0;j<pts.length;j++){
+      if(i===j) continue;
+      const dx=pts[i][0]-pts[j][0], dy=pts[i][1]-pts[j][1], dz=pts[i][2]-pts[j][2];
+      const d = Math.sqrt(dx*dx+dy*dy+dz*dz);
+      if(d < MAX_DIST) dists.push([d,j]);
+    }
+    dists.sort((a,b)=>a[0]-b[0]);
+    for(let k=0;k<Math.min(K,dists.length);k++){
+      const j = dists[k][1];
+      const key = i<j ? i+'_'+j : j+'_'+i;
+      if(!edgeSet.has(key)){ edgeSet.add(key); edges.push([i,j]); }
+    }
+  }
+
+  const dotPositions = new Float32Array(pts.length*3);
+  pts.forEach((p,i)=>{ dotPositions[i*3]=p[0]; dotPositions[i*3+1]=p[1]; dotPositions[i*3+2]=p[2]; });
+  const dotGeo = new THREE.BufferGeometry();
+  dotGeo.setAttribute('position', new THREE.BufferAttribute(dotPositions,3));
+  const dotMat = new THREE.PointsMaterial({size:0.05, color:0xE4433D, transparent:true, opacity:0.9, depthWrite:false, sizeAttenuation:true});
+  const dotCloud = new THREE.Points(dotGeo, dotMat);
+  group.add(dotCloud);
+
+  const linePositions = new Float32Array(edges.length*6);
+  edges.forEach((e,i)=>{
+    linePositions[i*6]=pts[e[0]][0]; linePositions[i*6+1]=pts[e[0]][1]; linePositions[i*6+2]=pts[e[0]][2];
+    linePositions[i*6+3]=pts[e[1]][0]; linePositions[i*6+4]=pts[e[1]][1]; linePositions[i*6+5]=pts[e[1]][2];
+  });
+  const lineGeo = new THREE.BufferGeometry();
+  lineGeo.setAttribute('position', new THREE.BufferAttribute(linePositions,3));
+  const lineMat = new THREE.LineBasicMaterial({color:0xF4F4F7, transparent:true, opacity:0.2});
+  const lineMesh = new THREE.LineSegments(lineGeo, lineMat);
+  group.add(lineMesh);
+
+  group.scale.set(1.5,1.5,1.5);
+  group.rotation.y = -0.4;
+
+  const pulseIdx = [];
+  for(let i=0;i<70;i++) pulseIdx.push(Math.floor(Math.random()*pts.length));
+  const dotColorAttr = new THREE.Float32BufferAttribute(new Float32Array(pts.length*3), 3);
+  for(let i=0;i<pts.length;i++){ dotColorAttr.setXYZ(i, 0.894,0.263,0.239); }
+  dotGeo.setAttribute('color', dotColorAttr);
+  dotMat.vertexColors = true;
+
+  // ---- starfield ----
+  const STAR_PALETTE = [
+    [0.55, 0.68, 1.00],
+    [0.85, 0.90, 1.00],
+    [1.00, 0.96, 0.88],
+    [1.00, 0.78, 0.48],
+    [1.00, 0.55, 0.42],
+  ];
+  const STAR_WEIGHTS = [0.14, 0.34, 0.28, 0.16, 0.08];
+  function pickStarColor(){
+    let r = Math.random(), acc = 0;
+    for(let i=0;i<STAR_WEIGHTS.length;i++){
+      acc += STAR_WEIGHTS[i];
+      if(r <= acc) return STAR_PALETTE[i];
+    }
+    return STAR_PALETTE[STAR_PALETTE.length-1];
+  }
+  function makeStarLayer(count, radiusMin, radiusMax, size, baseOpacity){
+    const positions = new Float32Array(count*3);
+    const colors = new Float32Array(count*3);
+    const baseColors = new Float32Array(count*3);
+    for(let i=0;i<count;i++){
+      const u = Math.random()*Math.PI*2, v = Math.acos(2*Math.random()-1);
+      const r = radiusMin + Math.random()*(radiusMax-radiusMin);
+      positions[i*3]   = r*Math.sin(v)*Math.cos(u);
+      positions[i*3+1] = r*Math.cos(v);
+      positions[i*3+2] = r*Math.sin(v)*Math.sin(u);
+      const c = pickStarColor();
+      const dim = 0.5 + Math.random()*0.5;
+      colors[i*3]=c[0]*dim; colors[i*3+1]=c[1]*dim; colors[i*3+2]=c[2]*dim;
+      baseColors[i*3]=colors[i*3]; baseColors[i*3+1]=colors[i*3+1]; baseColors[i*3+2]=colors[i*3+2];
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions,3));
+    const colorAttr = new THREE.BufferAttribute(colors,3);
+    geo.setAttribute('color', colorAttr);
+    const mat = new THREE.PointsMaterial({size, vertexColors:true, transparent:true, opacity:baseOpacity, depthWrite:false, sizeAttenuation:true});
+    const points = new THREE.Points(geo, mat);
+    return {points, colorAttr, baseColors, count};
+  }
+  const starsFar = makeStarLayer(700, 11, 30, 0.05, 0.5);
+  const starsNear = makeStarLayer(160, 9, 16, 0.09, 0.75);
+  const starGroup = new THREE.Group();
+  starGroup.add(starsFar.points, starsNear.points);
+  scene.add(starGroup);
+
+  const twinkleFar = [];
+  for(let i=0;i<50;i++) twinkleFar.push({idx:Math.floor(Math.random()*starsFar.count), phase:Math.random()*Math.PI*2, speed:0.4+Math.random()*0.5});
+  function updateTwinkle(layer, list, t){
+    list.forEach(s=>{
+      const b = 0.4 + 0.6*((Math.sin(t*s.speed + s.phase)+1)/2);
+      layer.colorAttr.setXYZ(s.idx, layer.baseColors[s.idx*3]*b, layer.baseColors[s.idx*3+1]*b, layer.baseColors[s.idx*3+2]*b);
+    });
+    layer.colorAttr.needsUpdate = true;
+  }
+
+  const clock = new THREE.Clock();
+  function animate(){
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+    group.rotation.y = -0.4 + t*0.14;
+    group.rotation.x = Math.sin(t*0.15)*0.05;
+
+    const pulse = (Math.sin(t*1.4)+1)/2;
+    pulseIdx.forEach(i=>{
+      dotColorAttr.setXYZ(i, 0.894+pulse*0.10, 0.263+pulse*0.25, 0.239+pulse*0.26);
+    });
+    dotColorAttr.needsUpdate = true;
+
+    starGroup.rotation.y = t*0.006;
+    updateTwinkle(starsFar, twinkleFar, t);
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  function onResize(){
+    width = window.innerWidth; height = window.innerHeight;
+    camera.aspect = width/height; camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+  }
+  window.addEventListener('resize', onResize);
+})();
+
+/* ============================================================
+   TELEMETRY — unchanged logic
+============================================================ */
+(function(){
+  const els = {
+    connDot: document.getElementById('connDot'),
+    connLabel: document.getElementById('connLabel'),
+    wsUrlInput: document.getElementById('wsUrlInput'),
+    connectBtn: document.getElementById('connectBtn'),
+    rateLabel: document.getElementById('rateLabel'),
+    urlEcho: document.getElementById('urlEcho'),
+    faintBanner: document.getElementById('faintBanner'),
+    faintSub: document.getElementById('faintSub'),
+    postureDot: document.getElementById('postureDot'),
+    postureText: document.getElementById('postureText'),
+    postureSub: document.getElementById('postureSub'),
+    distanceValue: document.getElementById('distanceValue'),
+    distanceBar: document.getElementById('distanceBar'),
+    distanceZone: document.getElementById('distanceZone'),
+    motorValue: document.getElementById('motorValue'),
+    motorBar: document.getElementById('motorBar'),
+    motorSub: document.getElementById('motorSub'),
+    pitchValue: document.getElementById('pitchValue'),
+    rollValue: document.getElementById('rollValue'),
+    tiltDot: document.getElementById('tiltDot'),
+    tiltValue: document.getElementById('tiltValue'),
+    tiltBar: document.getElementById('tiltBar'),
+    gyroValue: document.getElementById('gyroValue'),
+    gyroBar: document.getElementById('gyroBar'),
+    rawFeed: document.getElementById('rawFeed'),
+  };
+
+  const NO_OBSTACLE_DISTANCE_MM = 2001;
+  const HAPTIC_START_DISTANCE_MM = 1000;
+  const HAPTIC_FULL_DISTANCE_MM = 100;
+  const FAINT_FINAL_TILT_DEG = 32.0;
+  const FAINT_GYRO_DPS = 75.0;
+
+  let ws = null;
+  let reconnectTimer = null;
+  let lastMsgAt = 0;
+  let msgTimestamps = [];
+  let wasFainted = false;
+
+  function clamp01(n){ return Math.max(0, Math.min(1, n)); }
+
+  function setConnState(state, label){
+    els.connDot.className = 'conn-dot ' + state;
+    els.connLabel.textContent = label;
+  }
+
+  function buildUrl(raw){
+    let v = raw.trim();
+    if(v.startsWith('ws://') || v.startsWith('wss://')) return v;
+    if(!v.includes(':')) v += ':81';
+    return 'ws://' + v + '/';
+  }
+
+  function connect(){
+    clearTimeout(reconnectTimer);
+    const url = buildUrl(els.wsUrlInput.value);
+    els.urlEcho.textContent = url;
+    setConnState('connecting', 'Connecting…');
+
+    try{
+      ws = new WebSocket(url);
+    } catch(e){
+      setConnState('disconnected', 'Invalid address');
+      scheduleReconnect();
+      return;
+    }
+
+    ws.onopen = () => {
+      setConnState('connected', 'Connected');
+    };
+    ws.onclose = () => {
+      setConnState('disconnected', 'Disconnected — retrying…');
+      scheduleReconnect();
+    };
+    ws.onerror = () => {};
+    ws.onmessage = (evt) => {
+      lastMsgAt = performance.now();
+      msgTimestamps.push(lastMsgAt);
+      msgTimestamps = msgTimestamps.filter(t => lastMsgAt - t < 1000);
+      let data;
+      try{
+        data = JSON.parse(evt.data);
+      } catch(e){
+        els.rawFeed.textContent = 'Could not parse message:\n' + evt.data;
+        return;
+      }
+      render(data);
+      els.rawFeed.textContent = JSON.stringify(data, null, 2);
+    };
+  }
+
+  function scheduleReconnect(){
+    clearTimeout(reconnectTimer);
+    reconnectTimer = setTimeout(connect, 1500);
+  }
+
+  function render(d){
+    const fainted = !!d.fainted;
+    els.postureDot.classList.toggle('fainted', fainted);
+    els.postureText.textContent = fainted ? 'Fainted' : 'Upright';
+    els.postureSub.textContent = fainted ? 'Motor at full strength' : 'No faint detected';
+    els.faintBanner.classList.toggle('show', fainted);
+    if(fainted && !wasFainted){
+      els.faintSub.textContent = 'Detected just now — motor is buzzing at full strength';
+    }
+    wasFainted = fainted;
+
+    const distanceValid = d.distanceValid !== false && typeof d.distance === 'number' && d.distance < NO_OBSTACLE_DISTANCE_MM;
+    if(distanceValid){
+      const cm = (d.distance / 10).toFixed(1);
+      els.distanceValue.textContent = cm;
+      const closeness = clamp01((HAPTIC_START_DISTANCE_MM - d.distance) / (HAPTIC_START_DISTANCE_MM - HAPTIC_FULL_DISTANCE_MM));
+      const barPct = clamp01((2000 - d.distance) / 2000) * 100;
+      els.distanceBar.style.width = barPct + '%';
+      if(d.distance <= HAPTIC_FULL_DISTANCE_MM){
+        els.distanceBar.style.background = 'var(--danger)';
+        els.distanceBar.style.boxShadow = '0 0 10px 1px rgba(140,19,39,0.7)';
+        els.distanceZone.textContent = 'Full intensity';
+        els.distanceZone.className = 'zone-tag zone-danger';
+      } else if(d.distance < HAPTIC_START_DISTANCE_MM){
+        els.distanceBar.style.background = 'var(--alert)';
+        els.distanceBar.style.boxShadow = '0 0 8px 1px rgba(228,67,61,0.55)';
+        els.distanceZone.textContent = 'Buzzing (' + Math.round(closeness*100) + '%)';
+        els.distanceZone.className = 'zone-tag zone-alert';
+      } else {
+        els.distanceBar.style.background = 'var(--ink-soft)';
+        els.distanceBar.style.boxShadow = 'none';
+        els.distanceZone.textContent = 'Clear';
+        els.distanceZone.className = 'zone-tag zone-clear';
+      }
+    } else {
+      els.distanceValue.textContent = '—';
+      els.distanceBar.style.width = '0%';
+      els.distanceZone.textContent = 'No obstacle (≥2m)';
+      els.distanceZone.className = 'zone-tag zone-clear';
+    }
+
+    const duty = typeof d.motorDuty === 'number' ? d.motorDuty : (d.motors || 0);
+    const dutyPct = Math.round((duty/255)*100);
+    els.motorValue.textContent = dutyPct;
+    els.motorBar.style.width = dutyPct + '%';
+    els.motorBar.style.background = duty >= 255 ? 'var(--danger)' : 'var(--rust)';
+    els.motorBar.style.boxShadow = duty > 0 ? '0 0 8px 1px rgba(228,67,61,0.5)' : 'none';
+    els.motorSub.textContent = 'raw duty ' + duty + ' / 255';
+
+    const pitch = typeof d.pitch === 'number' ? d.pitch : 0;
+    const roll = typeof d.roll === 'number' ? d.roll : 0;
+    els.pitchValue.textContent = pitch.toFixed(1);
+    els.rollValue.textContent = roll.toFixed(1);
+    const maxDeg = 45;
+    const dx = clamp01((roll + maxDeg) / (maxDeg*2)) * 88 + 16;
+    const dy = clamp01((pitch + maxDeg) / (maxDeg*2)) * 88 + 16;
+    els.tiltDot.setAttribute('transform', `translate(${dx-60}, ${dy-60})`);
+
+    const tilt = typeof d.tilt === 'number' ? d.tilt : 0;
+    els.tiltValue.textContent = tilt.toFixed(1);
+    els.tiltBar.style.width = clamp01(tilt / FAINT_FINAL_TILT_DEG) * 100 + '%';
+    els.tiltBar.style.background = tilt >= FAINT_FINAL_TILT_DEG ? 'var(--danger)' : 'var(--rust)';
+
+    const gyro = typeof d.gyroMotion === 'number' ? d.gyroMotion : 0;
+    els.gyroValue.textContent = gyro.toFixed(1);
+    els.gyroBar.style.width = clamp01(gyro / FAINT_GYRO_DPS) * 100 + '%';
+    els.gyroBar.style.background = gyro >= FAINT_GYRO_DPS ? 'var(--danger)' : 'var(--rust)';
+  }
+
+  setInterval(() => {
+    if(!ws || ws.readyState !== WebSocket.OPEN) return;
+    const sinceLast = performance.now() - lastMsgAt;
+    if(lastMsgAt && sinceLast > 1000){
+      setConnState('stale', 'Connected, no data (' + Math.round(sinceLast/1000) + 's)');
+    } else if(lastMsgAt){
+      setConnState('connected', 'Connected');
+    }
+    els.rateLabel.textContent = msgTimestamps.length ? msgTimestamps.length + ' msg/s' : '';
+  }, 400);
+
+  els.connectBtn.addEventListener('click', () => {
+    if(ws) ws.close();
+    connect();
+  });
+  els.wsUrlInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){ if(ws) ws.close(); connect(); }
+  });
+
+  connect();
+})();
+</script>
+</body>
+</html>
