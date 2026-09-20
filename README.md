@@ -8,7 +8,7 @@ NeuroNav acts as a digital sixth sense, converting real-time IMU tilt tracking a
 
 ## ⚡ Key Features
 
-* **12 Haptic Motor Matrix:** Delivers directional spatial cues straight to the user.
+* **1-12 Haptic Motor Matrix:** Delivers directional spatial cues straight to the user.
 * **40Hz Sensor Poll Rate:** Ultra-low latency data collection for real-time feedback.
 * **Proximity Zones:** 3 distinct distance tiers mapped via Time-of-Flight sensors.
 * **Live Caretaker Dashboard:** Built with Next.js and WebSockets to stream posture orientation and spatial metrics remotely.
