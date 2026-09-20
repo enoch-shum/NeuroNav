@@ -1,41 +1,40 @@
-<<<<<<< HEAD
-# NeuroNav: Spatial Telemetry & Haptic Matrix
+# NeuroNav 🧭🧠
+> **Real-Time Haptic Navigation and Posture Monitor**  
+> *Built for VTHacks 14 (36-hour hackathon window)*
 
-NeuroNav is a 36-hour hackathon project designed to provide intuitive spatial awareness through haptic feedback while broadcasting live posture and proximity telemetry to a remote caregiver dashboard.
+NeuroNav acts as a digital sixth sense, converting real-time IMU tilt tracking and laser distance measurements into a tactile haptic response matrix. It allows users to read a room or monitor posture without needing to glance at their surroundings.
 
-## 🛠 Architecture
-- **Hardware:** ESP32 Dev Module, VL53L0X Time-of-Flight sensor, MPU-6050 6-axis IMU, 12x vibration motors driven by 2N2222 NPN transistors.
-- **Backend:** C++ WebSockets via PlatformIO.
-- **Frontend:** Next.js (React), Node.js, Tailwind CSS.
+---
 
-## ⚡ Haptic Matrix Pinout
+## ⚡ Key Features
 
-| Motor ID | ESP32 GPIO | Transistor Base | Note |
-|----------|------------|-----------------|------|
-| Motor 1  | GPIO 2     | 2N2222 Base     | Safe for output |
-| Motor 2  | GPIO 4     | 2N2222 Base     | Safe for output |
-| Motor 3  | GPIO 5     | 2N2222 Base     | Safe for output |
-| Motor 4  | GPIO 12    | 2N2222 Base     | JTAG / Safe |
-| Motor 5  | GPIO 13    | 2N2222 Base     | JTAG / Safe |
-| Motor 6  | GPIO 14    | 2N2222 Base     | JTAG / Safe |
-| Motor 7  | GPIO 15    | 2N2222 Base     | JTAG / Safe |
-| Motor 8  | GPIO 18    | 2N2222 Base     | SPI / Safe |
-| Motor 9  | GPIO 19    | 2N2222 Base     | SPI / Safe |
-| Motor 10 | GPIO 25    | 2N2222 Base     | DAC / Safe |
-| Motor 11 | GPIO 26    | 2N2222 Base     | DAC / Safe |
-| Motor 12 | GPIO 27    | 2N2222 Base     | ADC / Safe |
+* **1-12 Haptic Motor Matrix:** Delivers directional spatial cues straight to the user.
+* **40Hz Sensor Poll Rate:** Ultra-low latency data collection for real-time feedback.
+* **Proximity Zones:** 3 distinct distance tiers mapped via Time-of-Flight sensors.
+* **Live Caretaker Dashboard:** Built with Next.js and WebSockets to stream posture orientation and spatial metrics remotely.
+* **Immersive 3D Landing Page:** Interactive Three.js brain visualization demonstrating the haptic network.
 
-*Note: I2C bus occupies GPIO 21 (SDA) and GPIO 22 (SCL). System powered by a 2.1A+ USB power bank via VIN.*
+---
 
-## 🚀 Quick Start Guide
+## 🛠️ Tech Stack & Hardware
 
-### 1. Caregiver Dashboard (Frontend)
-Ensure you have Node.js installed.
+### Hardware Components
+* **Microcontroller:** ESP32
+* **IMU:** MPU-6050 (Accelerometer & Gyroscope for tilt/posture tracking)
+* **Distance Sensor:** VL53L0X Time-of-Flight (ToF) Laser Sensor
+* **Feedback:** 12x Haptic Vibration Motors
+
+### Software & Frontend
+* **Embedded/Firmware:** C++ (Arduino IDE / PlatformIO)
+* **Communication:** WebSockets (Real-time telemetry)
+* **Dashboard / Web App:** Next.js, Tailwind CSS, Three.js
+* **Styling:** Fraunces & Inter typography
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the Repository
 ```bash
-cd dashboard
-npm install
-npm run dev
-=======
-# NeuroNav
-Building modular alternatives to dedicated wheelchair systems for users with other conditions.
->>>>>>> 0d5f14edec289abc40103736044f92abbc76b5e5
+git clone [https://github.com/your-username/neuronav.git](https://github.com/your-username/neuronav.git)
+cd neuronav
