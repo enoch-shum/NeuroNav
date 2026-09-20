@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroNav — Pitch Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root{
+    --bg:#05070D;
+    --panel:#0B1020;
+    --line:rgba(244,244,247,0.14);
+    --ink:#F4F4F7;
+    --ink-soft:#9AA3BC;
+    --rust:#E4433D;
+    --rust-deep:#9E1B2E;
+    --ok:#4ADE80;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+    body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    transition:opacity 0.5s ease;
+  }
+  body.page-fade-out{ opacity:0; }
+  h1,h2,h3,.serif{
+    font-family:'Fraunces',Georgia,serif; font-weight:600; letter-spacing:-0.01em; margin:0;
+  }
+  a{color:inherit; text-decoration:none;}
+  ::selection{background:var(--rust); color:var(--ink);}
+
+  /* ---------- background (persistent — behind hero AND deck, never swapped) ---------- */
+  #brain-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+  .bg-glow{
+    position:fixed;top:-20%;right:-10%;width:60vw;height:60vw;
+    background:radial-gradient(circle, rgba(228,67,61,0.08), transparent 65%);
+    z-index:0;pointer-events:none;
+  }
+  .p-ring{
+    position:fixed;left:50%;top:50%;
+    border:1px solid rgba(228,67,61,0.15); border-radius:50%;
+    z-index:0;pointer-events:none;
+  }
+  #ring1{animation:ringSpin 90s linear infinite;}
+  #ring2{animation:ringSpin 130s linear infinite reverse;}
+  @keyframes ringSpin{from{transform:translate(-50%,-50%) rotate(0deg);}to{transform:translate(-50%,-50%) rotate(360deg);}}
+
+  /* ---------- nav ---------- */
+  .site-nav{
+    position:fixed; top:0;left:0;right:0; z-index:50;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:18px clamp(20px,5vw,56px);
+    background:rgba(5,7,13,0.45); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-mark{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--ink);}
+  .nav-mark span{color:var(--rust);}
+  .nav-links{display:flex;align-items:center;gap:28px;font-size:13.5px;color:rgba(244,244,247,0.75);}
+  .nav-links a:hover{color:var(--ink);}
+  .nav-cta{
+    padding:9px 18px; background:var(--rust-deep); color:#fff !important;
+    border-radius:999px; font-weight:500; transition:background 0.2s;
+  }
+  .nav-cta:hover{background:var(--rust);}
+  @media (max-width:680px){ .nav-links a:not(.nav-cta){display:none;} }
+
+  /* ---------- HERO (pinned, scrolls seamlessly into the deck below) ---------- */
+  .hero-pin-wrap{position:relative;height:240vh;}
+  .hero-pin{
+    position:sticky;top:0;height:100vh;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .hero-stack{position:relative;z-index:2;width:100%;max-width:920px;padding:0 24px;text-align:center;}
+  .hero-title{font-size:clamp(52px,9vw,120px);line-height:0.95;color:var(--ink);will-change:transform,opacity;}
+  .hero-title span{color:var(--rust);}
+  .hero-tagline{
+    margin-top:10px;font-size:clamp(20px,3vw,32px);font-family:'Fraunces',serif;font-weight:500;
+    color:rgba(244,244,247,0.9);opacity:0;will-change:transform,opacity;
+  }
+  .hero-blurb{
+    margin:0 auto;max-width:520px;font-size:16px;line-height:1.6;color:rgba(244,244,247,0.68);
+    opacity:0;will-change:transform,opacity;
+  }
+  .hero-stats{display:flex;gap:clamp(22px,5vw,52px);justify-content:center;margin-top:36px;flex-wrap:wrap;opacity:0;will-change:transform,opacity;}
+  .stat .num{font-family:'Fraunces',serif;font-size:28px;color:var(--rust);}
+  .stat .lab{font-size:12.5px;color:var(--ink-soft);margin-top:4px;}
+  .scroll-cue{
+    position:absolute;left:50%;bottom:28px;transform:translateX(-50%);z-index:2;
+    font-size:11.5px;letter-spacing:0.06em;color:rgba(244,244,247,0.4);
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+  }
+  .scroll-cue::after{content:'';width:1px;height:34px;background:rgba(244,244,247,0.3);animation:cuefall 1.8s ease-in-out infinite;}
+  @keyframes cuefall{0%{transform:scaleY(0.3);opacity:0.3;}50%{transform:scaleY(1);opacity:1;}100%{transform:scaleY(0.3);opacity:0.3;}}
+
+  /* ---------- FULL PAGE SLIDESHOW CONTAINER ---------- */
+  .deck-container {
+    min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+    position: relative; z-index: 10;
+    padding: 80px 2.5vw 30px; /* takes up more of the page than before */
+    width: 100%;
+  }
+
+  .presentation-window {
+    width: 100%; max-width: 1900px;
+    height: 85vh;
+    display: flex; flex-direction: column;
+    perspective: 1200px;
+  }
+
+  .slide-track {
+    position: relative; width: 100%; flex: 1;
+    min-height: 500px;
+  }
+
+  /* ---------- LIQUID GLASS SLIDES ---------- */
+  .slide {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(1px);
+    -webkit-backdrop-filter: blur(1px);
+    border: 1px solid rgba(244, 244, 247, 0.08);
+    box-shadow: 0 16px 40px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    border-radius: 32px;
+    padding: clamp(30px, 6vh, 80px) clamp(30px, 6vw, 100px);
+    display: flex; flex-direction: column; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transform: translateZ(-100px) translateY(40px) scale(0.95);
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.7s ease;
+  }
+
+  .slide.active { opacity: 1; pointer-events: all; transform: translateZ(0) translateY(0) scale(1); }
+  .slide.past { transform: translateZ(100px) translateY(-40px) scale(1.05); }
+
+  /* ---------- INTERACTIVE TEXT ANIMATIONS (slowed down) ---------- */
+  .anim-elem {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 1.3s cubic-bezier(0.16, 1, 0.3, 1), transform 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .slide.active .anim-elem { opacity: 1; transform: translateY(0); }
+  .slide.active .anim-elem:nth-child(1) { transition-delay: 0.15s; }
+  .slide.active .anim-elem:nth-child(2) { transition-delay: 0.35s; }
+  .slide.active .anim-elem:nth-child(3) { transition-delay: 0.6s; }
+  .slide.active .anim-elem:nth-child(4) { transition-delay: 0.85s; }
+
+  .slide-eyebrow {
+    font-size: clamp(12px, 1.5vh, 16px); font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--rust); margin-bottom: 2vh;
+  }
+  .slide-title { font-size: clamp(36px, 5vw, 68px); line-height: 1.1; margin-bottom: 3vh; color: var(--ink); }
+  .slide-content { font-size: clamp(16px, 2vw, 22px); line-height: 1.6; color: var(--ink-soft); max-width: 1200px; }
+  .slide-content p { margin-top: 0; margin-bottom: 2.5vh; }
+  .slide-content ul { margin: 0; padding-left: 24px; }
+  .slide-content li { margin-bottom: 2vh; padding-left: 8px; }
+  .slide-content li::marker { color: var(--rust); }
+  .slide-content b { color: var(--ink); font-weight: 600; }
+
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(16px, 3vw, 32px); margin-top: 2vh; }
+
+  /* feature boxes: hidden until revealed one-by-one via the next arrow */
+  .feature-box {
+    background: rgba(255,255,255,0.02); border: 1px solid var(--line);
+    padding: clamp(20px, 3vh, 32px); border-radius: 20px;
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                background 0.3s, border-color 0.3s;
+  }
+  .feature-box.revealed { opacity: 1; transform: translateY(0); }
+  .feature-box:hover { transform: translateY(-5px) scale(1.02); background: rgba(255,255,255,0.05); border-color: rgba(228,67,61,0.4); }
+  .feature-box h4 { margin: 0 0 12px; font-family: 'Inter'; font-weight: 600; font-size: clamp(16px, 1.8vw, 22px); color: var(--ink); }
+  .feature-box p { margin: 0; font-size: clamp(14px, 1.5vw, 18px); color: var(--ink-soft); line-height: 1.5; }
+  .feature-hint{
+    margin-top: 2vh; font-size: 13px; color: var(--ink-soft); opacity: 0.7;
+  }
+
+  /* ---------- CONTROLS ---------- */
+  .controls { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 20px; padding: 0 2vw; }
+  .btn-nav {
+    display: flex; align-items: center; justify-content: center;
+    width: 54px; height: 54px; border-radius: 50%;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--line);
+    color: var(--ink); cursor: pointer; transition: all 0.2s;
+    backdrop-filter: blur(4px);
+  }
+  .btn-nav:hover:not(:disabled) { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); transform: scale(1.08); }
+  .btn-nav:disabled { opacity: 0.2; cursor: not-allowed; }
+  .btn-nav svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* bubble indicator — small round dots instead of wide bars */
+  .progress-container { display: flex; gap: 9px; align-items: center; }
+  .dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: rgba(255,255,255,0.16); cursor: pointer;
+    transition: background 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s;
+  }
+  .dot.active { background: var(--rust); transform: scale(1.35); box-shadow: 0 0 10px rgba(228,67,61,0.6); }
+  .dot:hover:not(.active) { background: rgba(255,255,255,0.35); }
+
+  .demo-btn {
+    display: inline-flex; align-items: center; gap: 12px;
+    background: var(--rust); color: #fff; padding: 20px 42px;
+    border-radius: 999px; font-size: clamp(16px, 1.5vw, 20px); font-weight: 600; margin-top: 3vh;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 0 30px rgba(228,67,61,0.4);
+  }
+  .demo-btn:hover { background: #ff554f; transform: translateY(-4px) scale(1.03); box-shadow: 0 12px 40px rgba(228,67,61,0.6); }
+
+  @media (max-width: 760px) {
+    .slide { padding: 40px 24px; }
+    .feature-grid { grid-template-columns: 1fr; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="brain-canvas"></canvas>
+<div class="bg-glow"></div>
+<div class="p-ring" id="ring1" style="width:560px;height:560px;margin:-280px 0 0 -280px;"></div>
+<div class="p-ring" id="ring2" style="width:820px;height:820px;margin:-410px 0 0 -410px;"></div>
+
+<nav class="site-nav">
+  <a href="index.html" class="nav-mark">Neuro<span>Nav</span></a>
+  <div class="nav-links">
+    <a href="Slideshow.html">Pitch Deck</a>
+    <a href="live.html" class="nav-cta">Live Simulation</a>
+  </div>
+</nav>
+
+<!-- ============ HERO (pinned, then scrolls straight into the deck) ============ -->
+<div class="hero-pin-wrap" id="heroWrap">
+  <div class="hero-pin">
+    <div class="hero-stack">
+      <h1 class="hero-title" id="heroTitle">Neuro<span>Nav</span></h1>
+      <p class="hero-tagline" id="heroTagline">Real-Time Haptic Navigation and Posture Monitor</p>
+      <p class="hero-blurb" id="heroBlurb">A non-invasive sensor suite that turns physical proximity and faint detection into a haptic feedback matrix — a room's geometry can be read entirely through touch.</p>
+      <div class="hero-stats" id="heroStats">
+        <div class="stat"><div class="num">12</div><div class="lab">haptic motors</div></div>
+        <div class="stat"><div class="num">20Hz</div><div class="lab">sensor poll rate</div></div>
+        <div class="stat"><div class="num">3</div><div class="lab">proximity zones</div></div>
+        <div class="stat"><div class="num">36h</div><div class="lab">build window</div></div>
+      </div>
+    </div>
+    <div class="scroll-cue">SCROLL</div>
+  </div>
+</div>
+
+<div class="deck-container">
+  <div class="presentation-window">
+    <div class="slide-track" id="slideTrack">
+
+      <!-- Slide 1: Problem -->
+      <div class="slide active">
+        <div class="slide-eyebrow anim-elem">The Problem</div>
+        <h2 class="slide-title serif anim-elem">The Mobility Gap</h2>
+        <div class="slide-content anim-elem">
+          <p>Over <b>11 million Americans</b> suffer from  Neurodegenerative diseases.</p>
+          <p>Currently, integrated smart wheelchair systems charge up to <b>$350 - $750 per year</b> for faint detection.</p>
+        </div>
+      </div>
+
+      <!-- Slide 2: Solution -->
+      <div class="slide">
+        <div class="slide-eyebrow anim-elem">The Solution</div>
+        <h2 class="slide-title serif anim-elem">What NeuroNav Does</h2>
+        <div class="slide-content anim-elem">
+          <p>We built a <b><sub-$50>sensor suite with haptic feedback</b> offering faint + obstacle detection.</p>
+        </div>
+      </div>
+
+      <!-- Slide 3: Features (click-to-reveal) -->
+      <div class="slide">
+        <div class="slide-eyebrow anim-elem">Capabilities</div>
+        <h2 class="slide-title serif anim-elem">Key Features</h2>
+        <div class="slide-content feature-grid" id="featuresGrid">
+          <div class="feature-box">
+            <h4>LiDAR Obstacle Detection</h4>
+            <p>Time-of-Flight (ToF) sensors detect environmental hazards</p>
+          </div>
+          <div class="feature-box">
+            <h4>Posture & Fatigue Tracking</h4>
+            <p>An MPU-6050 IMU tracks Yaw, Pitch, and Roll to detect rapid head slumps</p>
+          </div>
+          <div class="feature-box">
+            <h4>Multimodal Haptic Feedback</h4>
+            <p>Vibration motors notify the user of nearby obstacles, communicating distance through vibration strength</p>
+          </div>
+          <div class="feature-box">
+            <h4>Live Web Dashboard</h4>
+            <p>A Next.js zero-latency interface allows caregivers to monitor the user's posture and surroundings remotely.</p>
+          </div>
+        </div>
+        <div class="feature-hint" id="featureHint">Click the arrow to reveal each feature →</div>
+      </div>
+
+      <!-- Slide 4: Demo (swapped ahead of Future) -->
+      <div class="slide" style="align-items: center; text-align: center;">
+        <div class="slide-eyebrow anim-elem">Live Demo</div>
+        <h2 class="slide-title serif anim-elem" style="font-size: clamp(48px, 6vw, 84px);">See it in action.</h2>
+        <div class="slide-content anim-elem">
+          <p>Experience the zero-latency spatial telemetry and posture monitoring dashboard.</p>
+          <a href="live.html" class="demo-btn anim-elem">
+            Launch Web Dashboard
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Slide 5: Future (swapped after Demo) -->
+      <div class="slide">
+        <div class="slide-eyebrow anim-elem">The Future</div>
+        <h2 class="slide-title serif anim-elem">NeuroNav additions</h2>
+        <div class="slide-content anim-elem">
+          <ul>
+            <li><b>Neural EEG Integration:</b> Implementing electroencephalography sensors inside a helmet to read brainwaves for pinpoint detection of loss of consciousness.</li>
+            <li><b>Custom PCB:</b> Improve wire management and scalability of NeuroNav to <b>HCPs</b> and patients.</li>
+            <li><b>Custom CAD/CAM Mounts:</b> Transitioning to 3D-printed mounts / injection molding for seamless installation on any wheelchair model.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Slide 6: Questions -->
+      <div class="slide" style="align-items: center; text-align: center;">
+        <div class="slide-eyebrow anim-elem">Q&A</div>
+        <h2 class="slide-title serif anim-elem" style="font-size: clamp(48px, 6vw, 84px);">Questions?</h2>
+        <div class="slide-content anim-elem">
+          <p>We'd love to hear your thoughts, feedback, and answer any questions about the hardware, telemetry, or future scope.</p>
+        </div>
+      </div>
+
+      <!-- Slide 7: Thank You -->
+      <div class="slide" style="align-items: center; text-align: center;">
+        <div class="slide-eyebrow anim-elem">End of Presentation</div>
+        <h2 class="slide-title serif anim-elem" style="font-size: clamp(48px, 6vw, 84px);">Thank You.</h2>
+        <div class="slide-content anim-elem">
+          <p><b>NeuroNav</b><br><i>Enoch Shum, Connor Doty</i></p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="controls">
+      <button class="btn-nav" id="prevBtn" disabled>
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <div class="progress-container" id="dotContainer"></div>
+      <button class="btn-nav" id="nextBtn">
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function clamp01(n){ return Math.max(0, Math.min(1, n)); }
+function seg(p,a,b){ return clamp01((p-a)/(b-a)); }
+
+/* ============================================================
+   SLIDESHOW LOGIC
+============================================================ */
+const slides = document.querySelectorAll('.slide');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const dotContainer = document.getElementById('dotContainer');
+let currentIdx = 0;
+
+slides.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.classList.add('dot');
+  if (i === 0) dot.classList.add('active');
+  dot.addEventListener('click', () => goToSlide(i));
+  dotContainer.appendChild(dot);
+});
+const dots = document.querySelectorAll('.dot');
+
+// ---- click-to-reveal Key Features ----
+const featuresGrid = document.getElementById('featuresGrid');
+const featureHint = document.getElementById('featureHint');
+const featureBoxes = featuresGrid ? Array.from(featuresGrid.querySelectorAll('.feature-box')) : [];
+const featuresSlideIndex = Array.from(slides).findIndex(s => featuresGrid && s.contains(featuresGrid));
+let featureRevealStep = 0;
+
+function resetFeatureReveal(){
+  featureRevealStep = 0;
+  featureBoxes.forEach(b => b.classList.remove('revealed'));
+  if(featureHint) featureHint.style.opacity = '0.7';
+}
+function revealNextFeature(){
+  if(featureRevealStep < featureBoxes.length){
+    featureBoxes[featureRevealStep].classList.add('revealed');
+    featureRevealStep++;
+    if(featureHint) featureHint.style.opacity = featureRevealStep >= featureBoxes.length ? '0' : '0.7';
+    return true;
+  }
+  return false;
+}
+
+function updateState() {
+  slides.forEach((slide, i) => {
+    slide.classList.remove('active', 'past');
+    if (i === currentIdx) slide.classList.add('active');
+    else if (i < currentIdx) slide.classList.add('past');
+  });
+  dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIdx));
+  prevBtn.disabled = currentIdx === 0;
+  nextBtn.disabled = currentIdx === slides.length - 1;
+  if (currentIdx === featuresSlideIndex) resetFeatureReveal();
+}
+
+function goToSlide(idx) {
+  if (idx < 0 || idx >= slides.length) return;
+  currentIdx = idx;
+  updateState();
+}
+
+// next-arrow: on the Features slide, reveal one box at a time before advancing
+function handleNext(){
+  if (currentIdx === featuresSlideIndex && featureRevealStep < featureBoxes.length) {
+    revealNextFeature();
+    return;
+  }
+  goToSlide(currentIdx + 1);
+}
+
+prevBtn.addEventListener('click', () => goToSlide(currentIdx - 1));
+nextBtn.addEventListener('click', handleNext);
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') handleNext();
+  if (e.key === 'ArrowLeft') goToSlide(currentIdx - 1);
+});
+
+updateState();
+
+// smooth fade-out before leaving the page (e.g. "Launch Web Dashboard")
+document.querySelectorAll('.demo-btn').forEach(btn => {
+  btn.addEventListener('click', function(e){
+    const href = this.getAttribute('href');
+    if(!href || this.target === '_blank') return; // let new-tab links behave normally
+    e.preventDefault();
+    document.body.classList.add('page-fade-out');
+    setTimeout(()=>{ window.location.href = href; }, 480);
+  });
+});
+
+/* ============================================================
+   ROTATING BRAIN + STARFIELD BACKGROUND
+   (persistent across hero + deck — this is what makes the
+   transition seamless, since there's only ever one background)
+============================================================ */
+(function(){
+  const canvas = document.getElementById('brain-canvas');
+  let width = window.innerWidth, height = window.innerHeight;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(48, width/height, 0.1, 100);
+  camera.position.set(0, 0, 9.5);
+
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(width, height);
+
+  const group = new THREE.Group();
+  scene.add(group);
+
+  function sdSphere(x,y,z, cx,cy,cz, r){ return Math.sqrt((x-cx)**2+(y-cy)**2+(z-cz)**2)-r; }
+  function sdEllipsoid(x,y,z, cx,cy,cz, rx,ry,rz){
+    const nx=(x-cx)/rx, ny=(y-cy)/ry, nz=(z-cz)/rz;
+    const k = Math.sqrt(nx*nx+ny*ny+nz*nz);
+    return (k-1)*Math.min(rx,Math.min(ry,rz));
+  }
+  function sdCapsule(x,y,z, ax,ay,az, bx,by,bz, r){
+    const pax=x-ax,pay=y-ay,paz=z-az, bax=bx-ax,bay=by-ay,baz=bz-az;
+    const bb = bax*bax+bay*bay+baz*baz;
+    let h = bb>0 ? (pax*bax+pay*bay+paz*baz)/bb : 0;
+    h = Math.max(0, Math.min(1,h));
+    const dx=pax-bax*h, dy=pay-bay*h, dz=paz-baz*h;
+    return Math.sqrt(dx*dx+dy*dy+dz*dz)-r;
+  }
+  function brainSDF(x,y,z){
+    return Math.min(
+      sdEllipsoid(x,y,z, 0,0.28,0, 1.55,1.05,0.92),
+      sdSphere(x,y,z, 1.18,0.55,0, 0.56),
+      sdSphere(x,y,z, -1.28,0.32,0, 0.52),
+      sdEllipsoid(x,y,z, 0.22,-0.38,0, 0.66,0.46,0.6),
+      sdSphere(x,y,z, -0.55,-0.78,-0.02, 0.42),
+      sdCapsule(x,y,z, 0.32,-0.82,0, 0.14,-1.6,0, 0.15)
+    );
+  }
+
+  const NODE_COUNT = 460;
+  const pts = [];
+  let attempts = 0;
+  while(pts.length < NODE_COUNT && attempts < 500000){
+    attempts++;
+    const x = (Math.random()*4.6-2.3), y = (Math.random()*4.0-2.1), z = (Math.random()*2.8-1.4);
+    if(Math.abs(brainSDF(x,y,z)) < 0.045) pts.push([x,y,z]);
+  }
+
+  // recenter on the point cloud's BOUNDING-BOX center rather than its mean —
+  // the mean is sensitive to sampling-density noise across the 460 random
+  // points (different each load), while the bounding-box center reflects
+  // the actual shape extent and stays consistent — this is what keeps the
+  // brain (and the rings, anchored to world/viewport center) truly aligned
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity,minZ=Infinity,maxZ=-Infinity;
+  pts.forEach(p=>{
+    if(p[0]<minX)minX=p[0]; if(p[0]>maxX)maxX=p[0];
+    if(p[1]<minY)minY=p[1]; if(p[1]>maxY)maxY=p[1];
+    if(p[2]<minZ)minZ=p[2]; if(p[2]>maxZ)maxZ=p[2];
+  });
+  const ocx=(minX+maxX)/2, ocy=(minY+maxY)/2, ocz=(minZ+maxZ)/2;
+  pts.forEach(p=>{ p[0]-=ocx; p[1]-=ocy; p[2]-=ocz; });
+
+  const edgeSet = new Set(), edges = [];
+  for(let i=0;i<pts.length;i++){
+    const dists = [];
+    for(let j=0;j<pts.length;j++){
+      if(i===j) continue;
+      dists.push([Math.sqrt((pts[i][0]-pts[j][0])**2 + (pts[i][1]-pts[j][1])**2 + (pts[i][2]-pts[j][2])**2), j]);
+    }
+    dists.sort((a,b)=>a[0]-b[0]);
+    for(let k=0;k<Math.min(3,dists.length);k++){
+      if(dists[k][0] < 0.55){
+        const key = i<dists[k][1] ? i+'_'+dists[k][1] : dists[k][1]+'_'+i;
+        if(!edgeSet.has(key)){ edgeSet.add(key); edges.push([i,dists[k][1]]); }
+      }
+    }
+  }
+
+  const dotPositions = new Float32Array(pts.length*3);
+  pts.forEach((p,i)=>{ dotPositions[i*3]=p[0]; dotPositions[i*3+1]=p[1]; dotPositions[i*3+2]=p[2]; });
+  const dotGeo = new THREE.BufferGeometry();
+  dotGeo.setAttribute('position', new THREE.BufferAttribute(dotPositions,3));
+  const dotMat = new THREE.PointsMaterial({size:0.05, color:0xE4433D, transparent:true, opacity:0.9, depthWrite:false, sizeAttenuation:true});
+  group.add(new THREE.Points(dotGeo, dotMat));
+
+  const linePositions = new Float32Array(edges.length*6);
+  edges.forEach((e,i)=>{
+    linePositions[i*6]=pts[e[0]][0]; linePositions[i*6+1]=pts[e[0]][1]; linePositions[i*6+2]=pts[e[0]][2];
+    linePositions[i*6+3]=pts[e[1]][0]; linePositions[i*6+4]=pts[e[1]][1]; linePositions[i*6+5]=pts[e[1]][2];
+  });
+  const lineGeo = new THREE.BufferGeometry();
+  lineGeo.setAttribute('position', new THREE.BufferAttribute(linePositions,3));
+  group.add(new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({color:0xF4F4F7, transparent:true, opacity:0.2})));
+
+  const displacement = new Float32Array(pts.length*3), targetDisplacement = new Float32Array(pts.length*3);
+  const attractRaycaster = new THREE.Raycaster(), attractMouseNDC = new THREE.Vector2(-10,-10);
+  const attractPlane = new THREE.Plane(new THREE.Vector3(0,0,1), 0);
+  const attractCursorWorld = new THREE.Vector3(), attractCursorLocal = new THREE.Vector3(), attractInvMatrix = new THREE.Matrix4();
+  let attractActive = false;
+
+  window.addEventListener('mousemove', (e)=>{ attractMouseNDC.x = (e.clientX/window.innerWidth)*2-1; attractMouseNDC.y = -(e.clientY/window.innerHeight)*2+1; attractActive = true; });
+  window.addEventListener('mouseleave', ()=>{ attractActive = false; });
+
+  function updateAttraction(){
+    targetDisplacement.fill(0);
+    if(attractActive && attractRaycaster.setFromCamera(attractMouseNDC, camera) && attractRaycaster.ray.intersectPlane(attractPlane, attractCursorWorld)){
+      group.updateMatrixWorld();
+      attractCursorLocal.copy(attractCursorWorld).applyMatrix4(attractInvMatrix.copy(group.matrixWorld).invert());
+      let closestIdx = -1, closestDistSq = Infinity;
+      for(let i=0;i<pts.length;i++){
+        const d = (pts[i][0]-attractCursorLocal.x)**2 + (pts[i][1]-attractCursorLocal.y)**2 + (pts[i][2]-attractCursorLocal.z)**2;
+        if(d<closestDistSq){ closestDistSq=d; closestIdx=i; }
+      }
+      if(closestIdx>=0){
+        let dx=attractCursorLocal.x-pts[closestIdx][0], dy=attractCursorLocal.y-pts[closestIdx][1], dz=attractCursorLocal.z-pts[closestIdx][2];
+        const dist = Math.sqrt(dx*dx+dy*dy+dz*dz) || 0.0001, travel = Math.max(0, dist - 0.16);
+        targetDisplacement[closestIdx*3] = (dx/dist)*travel; targetDisplacement[closestIdx*3+1] = (dy/dist)*travel; targetDisplacement[closestIdx*3+2] = (dz/dist)*travel;
+      }
+    }
+    for(let i=0;i<pts.length;i++){
+      const i3=i*3;
+      displacement[i3] += (targetDisplacement[i3]-displacement[i3])*0.12; displacement[i3+1] += (targetDisplacement[i3+1]-displacement[i3+1])*0.12; displacement[i3+2] += (targetDisplacement[i3+2]-displacement[i3+2])*0.12;
+      dotPositions[i3] = pts[i][0]+displacement[i3]; dotPositions[i3+1] = pts[i][1]+displacement[i3+1]; dotPositions[i3+2] = pts[i][2]+displacement[i3+2];
+    }
+    dotGeo.attributes.position.needsUpdate = true;
+    edges.forEach((e,i)=>{ linePositions[i*6]=dotPositions[e[0]*3]; linePositions[i*6+1]=dotPositions[e[0]*3+1]; linePositions[i*6+2]=dotPositions[e[0]*3+2]; linePositions[i*6+3]=dotPositions[e[1]*3]; linePositions[i*6+4]=dotPositions[e[1]*3+1]; linePositions[i*6+5]=dotPositions[e[1]*3+2]; });
+    lineGeo.attributes.position.needsUpdate = true;
+  }
+
+  group.scale.set(1.5,1.5,1.5); group.rotation.y = -0.4;
+  const pulseIdx = Array.from({length:70}, ()=>Math.floor(Math.random()*pts.length));
+  const dotColorAttr = new THREE.Float32BufferAttribute(new Float32Array(pts.length*3), 3);
+  dotGeo.setAttribute('color', dotColorAttr);
+  dotMat.vertexColors = true;
+
+  /* STARFIELD */
+  const STAR_PALETTE = [[0.55, 0.68, 1.00], [0.85, 0.90, 1.00], [1.00, 0.96, 0.88], [1.00, 0.78, 0.48], [1.00, 0.55, 0.42]];
+  const STAR_WEIGHTS = [0.14, 0.34, 0.28, 0.16, 0.08];
+  function pickStarColor(){
+    let r = Math.random(), acc = 0;
+    for(let i=0;i<STAR_WEIGHTS.length;i++){ acc += STAR_WEIGHTS[i]; if(r <= acc) return STAR_PALETTE[i]; }
+    return STAR_PALETTE[STAR_PALETTE.length-1];
+  }
+  function makeStarLayer(count, radiusMin, radiusMax, size, baseOpacity){
+    const positions = new Float32Array(count*3), colors = new Float32Array(count*3), baseColors = new Float32Array(count*3);
+    for(let i=0;i<count;i++){
+      const u = Math.random()*Math.PI*2, v = Math.acos(2*Math.random()-1);
+      const r = radiusMin + Math.random()*(radiusMax-radiusMin);
+      positions[i*3] = r*Math.sin(v)*Math.cos(u); positions[i*3+1] = r*Math.cos(v); positions[i*3+2] = r*Math.sin(v)*Math.sin(u);
+      const c = pickStarColor(), dim = 0.5 + Math.random()*0.5;
+      colors[i*3]=c[0]*dim; colors[i*3+1]=c[1]*dim; colors[i*3+2]=c[2]*dim;
+      baseColors[i*3]=colors[i*3]; baseColors[i*3+1]=colors[i*3+1]; baseColors[i*3+2]=colors[i*3+2];
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions,3));
+    const colorAttr = new THREE.BufferAttribute(colors,3);
+    geo.setAttribute('color', colorAttr);
+    const mat = new THREE.PointsMaterial({size, vertexColors:true, transparent:true, opacity:baseOpacity, depthWrite:false, sizeAttenuation:true});
+    return {points: new THREE.Points(geo, mat), colorAttr, baseColors, count};
+  }
+  const starsFar = makeStarLayer(700, 11, 30, 0.05, 0.5);
+  const starsNear = makeStarLayer(160, 9, 16, 0.09, 0.75);
+  const starGroup = new THREE.Group();
+  starGroup.add(starsFar.points, starsNear.points);
+  scene.add(starGroup);
+
+  const twinkleFar = Array.from({length:50}, ()=>({idx:Math.floor(Math.random()*starsFar.count), phase:Math.random()*Math.PI*2, speed:0.4+Math.random()*0.5}));
+  function updateTwinkle(layer, list, t){
+    list.forEach(s=>{
+      const b = 0.4 + 0.6*((Math.sin(t*s.speed + s.phase)+1)/2);
+      layer.colorAttr.setXYZ(s.idx, layer.baseColors[s.idx*3]*b, layer.baseColors[s.idx*3+1]*b, layer.baseColors[s.idx*3+2]*b);
+    });
+    layer.colorAttr.needsUpdate = true;
+  }
+
+  /* ---- hero text choreography, reusing this same animate loop ---- */
+  const heroWrap = document.getElementById('heroWrap');
+  const heroTitleEl = document.getElementById('heroTitle');
+  const heroTaglineEl = document.getElementById('heroTagline');
+  const heroBlurbEl = document.getElementById('heroBlurb');
+  const heroStatsEl = document.getElementById('heroStats');
+  const scrollCueEl = document.querySelector('.scroll-cue');
+  const APPEAR_DELAY = 0.4, APPEAR_DUR = 1.6;
+  let titleScrollUp = 0, titleScrollOpacity = 1, taglineExitFactor = 1, taglineScrollUp = 0;
+
+  function updateHeroScroll(){
+    const rect = heroWrap.getBoundingClientRect();
+    const scrollable = heroWrap.offsetHeight - window.innerHeight;
+    const p = clamp01(-rect.top / Math.max(1,scrollable));
+    titleScrollUp = seg(p,0,0.7)*90;
+    titleScrollOpacity = 1 - seg(p,0.35,0.62);
+    taglineExitFactor = 1 - seg(p,0.5,0.72);
+    taglineScrollUp = seg(p,0,0.75)*150;
+    const contentIn = seg(p,0.45,0.62);
+    heroBlurbEl.style.opacity = contentIn;
+    heroBlurbEl.style.transform = `translateY(${24-24*contentIn}px)`;
+    heroStatsEl.style.opacity = contentIn;
+    heroStatsEl.style.transform = `translateY(${24-24*contentIn}px)`;
+    scrollCueEl.style.opacity = 1 - seg(p,0,0.12);
+  }
+  let heroTicking = false;
+  window.addEventListener('scroll', ()=>{
+    if(!heroTicking){ requestAnimationFrame(()=>{ updateHeroScroll(); heroTicking=false; }); heroTicking=true; }
+  }, {passive:true});
+  updateHeroScroll();
+
+  const clock = new THREE.Clock();
+  function animate(){
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+    group.rotation.y = -0.4 + t*0.14; group.rotation.x = Math.sin(t*0.15)*0.05;
+    const pulse = (Math.sin(t*1.4)+1)/2;
+    for(let i=0;i<pts.length;i++){ dotColorAttr.setXYZ(i, 0.894,0.263,0.239); }
+    pulseIdx.forEach(i=>{ dotColorAttr.setXYZ(i, 0.894+pulse*0.10, 0.263+pulse*0.25, 0.239+pulse*0.26); });
+    dotColorAttr.needsUpdate = true;
+    updateAttraction();
+    starGroup.rotation.y = t*0.006;
+    updateTwinkle(starsFar, twinkleFar, t);
+
+    const appearT = clamp01((t-APPEAR_DELAY)/APPEAR_DUR);
+    const appearEase = appearT*appearT*(3-2*appearT);
+    heroTitleEl.style.transform = `translateY(${-(appearEase*32 + titleScrollUp)}px)`;
+    heroTitleEl.style.opacity = titleScrollOpacity;
+    const taglinePulse = (Math.sin(t*(2*Math.PI/5))+1)/2;
+    heroTaglineEl.style.opacity = appearEase * taglineExitFactor * (0.55+0.45*taglinePulse);
+    heroTaglineEl.style.transform = `translateY(${(1-appearEase)*18 - taglineScrollUp}px)`;
+
+    renderer.render(scene, camera);
+  }
+  animate();
+  window.addEventListener('resize', ()=>{ width = window.innerWidth; height = window.innerHeight; camera.aspect = width/height; camera.updateProjectionMatrix(); renderer.setSize(width, height); });
+})();
+</script>
+</body>
+</html>

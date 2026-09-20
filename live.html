@@ -63,7 +63,7 @@
   #ring2{animation:ringSpin 130s linear infinite reverse;}
   @keyframes ringSpin{from{transform:translate(-50%,-50%) rotate(0deg);}to{transform:translate(-50%,-50%) rotate(360deg);}}
 
-  /* ---------- fixed nav (same as index.html) ---------- */
+  /* ---------- fixed nav ---------- */
   .site-nav{
     position:fixed;
     top:0;left:0;right:0;
@@ -73,8 +73,8 @@
     align-items:center;
     padding:18px clamp(20px,5vw,56px);
     background:rgba(5,7,13,0.45);
-    backdrop-filter:blur(5px);
-    -webkit-backdrop-filter:blur(5px);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
     border-bottom:1px solid var(--line);
   }
   .nav-mark{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--ink);}
@@ -108,11 +108,11 @@
     color:var(--rust);margin-bottom:6px;display:block;
   }
 
-  /* ---------- glass surface, shared by the connection bar, cards, raw-feed panel ---------- */
+  /* ---------- glass surface ---------- */
   .glass{
     background:rgba(255,255,255,0.045);
-    backdrop-filter:blur(3px) saturate(160%);
-    -webkit-backdrop-filter:blur(3px) saturate(160%);
+    backdrop-filter:blur(22px) saturate(160%);
+    -webkit-backdrop-filter:blur(22px) saturate(160%);
     border:1px solid rgba(244,244,247,0.14);
     box-shadow:0 8px 32px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(244,244,247,0.08);
   }
@@ -142,7 +142,7 @@
   .conn-bar button:hover{background:var(--rust);}
   .rate{font-size:11.5px;color:var(--ink-soft);font-family:monospace;padding-right:6px;}
 
-  /* ---------- faint alert banner — kept solid/opaque on purpose (safety-critical, must stay legible over anything) ---------- */
+  /* ---------- faint alert banner ---------- */
   .faint-banner{
     display:none;
     align-items:center;gap:16px;
@@ -157,26 +157,7 @@
   .faint-banner .text b{display:block;font-size:17px;font-family:'Fraunces',serif;font-weight:600;}
   .faint-banner .text span{font-size:13px;opacity:0.85;}
 
-  /* ---------- stat grid ---------- */
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));
-    gap:14px;
-  }
-  .card{
-    border-radius:22px;padding:22px;
-    transition:border-color 0.3s, transform 0.25s;
-  }
-  .card:hover{border-color:rgba(228,67,61,0.4);transform:translateY(-2px);}
-  .card .label{font-size:11px;text-transform:uppercase;letter-spacing:0.07em;color:var(--ink-soft);margin-bottom:12px;}
-  .card .value{font-family:'Fraunces',serif;font-size:32px;font-weight:600;font-variant-numeric:tabular-nums;}
-  .card .value small{font-family:'Inter';font-size:14px;font-weight:400;color:var(--ink-soft);margin-left:5px;}
-  .card .sub{font-size:12.5px;color:var(--ink-soft);margin-top:8px;}
-
-  .bar-track{height:7px;border-radius:999px;background:rgba(255,255,255,0.08);margin-top:14px;overflow:hidden;}
-  .bar-fill{height:100%;border-radius:999px;width:0%;transition:width 0.15s linear, background 0.2s ease, box-shadow 0.2s ease;}
-
-  /* ---------- posture bar (row 1) ---------- */
+  /* ---------- posture bar ---------- */
   .posture-bar{
     display:flex;align-items:center;gap:16px;
     border-radius:999px;padding:16px 26px;margin-bottom:14px;
@@ -188,36 +169,123 @@
   .posture-value{font-family:'Fraunces',serif;font-size:22px;font-weight:600;}
   .posture-sub{font-size:12.5px;color:var(--ink-soft);margin-left:auto;}
 
-  /* ---------- main two-column layout: 2x2 stat grid | tall head-tilt card ---------- */
-  .main-layout{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:14px;
-    align-items:stretch;
-  }
-  .left-stats{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    grid-template-rows:1fr 1fr;
-    gap:14px;
-  }
-  .head-tilt-card{display:flex;flex-direction:column;justify-content:center;}
-  @media (max-width:760px){
-    .main-layout{grid-template-columns:1fr;}
+  /* ---------- GLOBAL FLATTENED GRID LAYOUT ---------- */
+  .main-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 14px;
+    position: relative;
+    min-height: 400px;
+    transition: all 0.3s ease;
   }
 
-  .zone-tag{
-    display:inline-block;font-size:11px;font-weight:600;padding:4px 12px;
-    border-radius:999px;margin-top:12px;letter-spacing:0.02em;
-  }
-  .zone-clear{background:rgba(154,163,188,0.2);color:var(--ink-soft);}
-  .zone-warn{background:rgba(242,160,160,0.2);color:var(--warn);}
-  .zone-alert{background:rgba(228,67,61,0.22);color:var(--alert);}
-  .zone-danger{background:rgba(140,19,39,0.38);color:#ff8f8f;}
+  .card-distance { grid-column: 1 / 2; grid-row: 1 / 2; }
+  .card-motor    { grid-column: 2 / 3; grid-row: 1 / 2; }
+  .card-tilt     { grid-column: 1 / 2; grid-row: 2 / 3; }
+  .card-gyro     { grid-column: 2 / 3; grid-row: 2 / 3; }
+  .card-head     { grid-column: 3 / 4; grid-row: 1 / 3; display: flex; flex-direction: column; justify-content: center; }
 
-  /* ---------- attitude indicator ---------- */
-  .attitude{display:flex;justify-content:center;align-items:center;margin-top:8px;}
-  .attitude svg{width:118px;height:118px;}
+  @media (max-width: 760px) {
+    .main-layout { grid-template-columns: 1fr; grid-template-rows: auto; }
+    .card-distance, .card-motor, .card-tilt, .card-gyro, .card-head {
+      grid-column: 1 / -1; grid-row: auto;
+    }
+  }
+
+  /* All Cards base styles */
+  .card {
+    border-radius: 22px;
+    padding: 22px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s, transform 0.25s;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .card:hover { border-color: rgba(228,67,61,0.4); transform: translateY(-2px); }
+
+  .card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-soft); margin-bottom: 12px; transition: all 0.3s; }
+  .card .value { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 600; font-variant-numeric: tabular-nums; transition: all 0.3s; }
+  .card .value small { font-family: 'Inter'; font-size: 14px; font-weight: 400; color: var(--ink-soft); margin-left: 5px; }
+  .card .sub { font-size: 12.5px; color: var(--ink-soft); margin-top: 8px; }
+
+  .bar-track { height: 7px; border-radius: 999px; background: rgba(255,255,255,0.08); margin-top: 14px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 999px; width: 0%; transition: width 0.15s linear, background 0.2s ease, box-shadow 0.2s ease; }
+
+  .zone-tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 999px; margin-top: 12px; letter-spacing: 0.02em; }
+  .zone-clear { background: rgba(154,163,188,0.2); color: var(--ink-soft); }
+  .zone-warn { background: rgba(242,160,160,0.2); color: var(--warn); }
+  .zone-alert { background: rgba(228,67,61,0.22); color: var(--alert); }
+  .zone-danger { background: rgba(140,19,39,0.38); color: #ff8f8f; }
+
+  /* Head tilt specific elements */
+  .attitude { display: flex; justify-content: center; align-items: center; margin-top: 8px; transition: all 0.3s; }
+  .attitude svg { width: 118px; height: 118px; transition: all 0.3s; }
+  
+  /* Head-tilt minimized container view */
+  .head-min-content { display: none; align-items: center; gap: 10px; width: 100%; justify-content: space-between; }
+  .mini-attitude { width: 28px; height: 28px; flex-shrink: 0; }
+  .mini-head-text { font-size: 12.5px; font-family: 'SF Mono', Menlo, monospace; color: var(--ink); }
+
+  /* ---------- EXPANDED & MINIMIZED STATES ---------- */
+  .main-layout.has-expanded {
+    display: flex;
+  }
+
+  /* The one big clicked card */
+  .main-layout .card.expanded {
+    flex: 1;
+    transform: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 32px 42px;
+    background: rgba(11, 16, 32, 0.4);
+    box-shadow: 0 0 50px -10px rgba(0,0,0,0.7), inset 0 1px 0 rgba(244,244,247,0.1);
+    cursor: default;
+  }
+  .main-layout .card.expanded:hover { transform: none; }
+  .main-layout .card.expanded .label { font-size: 14px; margin-bottom: 24px; color: var(--ink); }
+  .main-layout .card.expanded .value { font-size: 82px; color: var(--rust); }
+  .main-layout .card.expanded .value small { font-size: 24px; }
+  .main-layout .card.expanded .bar-track { height: 12px; margin-top: 32px; }
+  .main-layout .card.expanded .sub, 
+  .main-layout .card.expanded .zone-tag { font-size: 16px; margin-top: 20px; }
+  .main-layout .card.expanded .attitude svg { width: 220px; height: 220px; }
+
+  /* The other cards floating on top right: clear transparent background, 2px blur, moved down 20px */
+  .main-layout .card.minimized {
+    position: absolute;
+    right: 20px;
+    z-index: 10;
+    width: auto;
+    min-width: 175px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    background: rgba(11, 16, 32, 0.12);
+    border: 1px solid rgba(244, 244, 247, 0.08);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+    cursor: pointer;
+  }
+  .main-layout .card.minimized:hover { transform: translateX(-4px); border-color: rgba(228,67,61,0.4); }
+  .main-layout .card.minimized .label { margin: 0; font-size: 10.5px; flex-shrink: 0; max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .main-layout .card.minimized .value { font-size: 17px; margin: 0; display: flex; align-items: baseline; gap: 3px; }
+  .main-layout .card.minimized .value small { font-size: 11px; }
+  
+  .main-layout .card.minimized .bar-track,
+  .main-layout .card.minimized .sub,
+  .main-layout .card.minimized .zone-tag,
+  .main-layout .card.minimized .attitude { display: none !important; }
+
+  /* Special rule for card-head when minimized */
+  .main-layout .card-head.minimized .head-min-content { display: flex !important; }
+  .main-layout .card-head.minimized .label { margin: 0; font-size: 10.5px; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   /* ---------- raw feed ---------- */
   details{margin-top:22px;border-radius:20px;}
@@ -282,42 +350,53 @@
     <span class="posture-sub" id="postureSub">Waiting for data…</span>
   </div>
 
-  <div class="main-layout">
+  <!-- FLATTENED MAIN LAYOUT -->
+  <div class="main-layout" id="mainLayout">
 
-    <div class="left-stats">
-
-      <div class="card glass">
-        <div class="label">Distance to obstacle</div>
-        <div class="value"><span id="distanceValue">—</span><small>cm</small></div>
-        <div class="bar-track"><div class="bar-fill" id="distanceBar" style="background:var(--ink-soft);"></div></div>
-        <span class="zone-tag zone-clear" id="distanceZone">—</span>
-      </div>
-
-      <div class="card glass">
-        <div class="label">Motor duty</div>
-        <div class="value"><span id="motorValue">—</span><small>%</small></div>
-        <div class="bar-track"><div class="bar-fill" id="motorBar" style="background:var(--rust);"></div></div>
-        <div class="sub" id="motorSub">PWM 0–255</div>
-      </div>
-
-      <div class="card glass">
-        <div class="label">Tilt magnitude</div>
-        <div class="value"><span id="tiltValue">—</span><small>&deg;</small></div>
-        <div class="bar-track"><div class="bar-fill" id="tiltBar" style="background:var(--rust);"></div></div>
-        <div class="sub">Faint threshold: 32&deg;</div>
-      </div>
-
-      <div class="card glass">
-        <div class="label">Gyro motion</div>
-        <div class="value"><span id="gyroValue">—</span><small>&deg;/s</small></div>
-        <div class="bar-track"><div class="bar-fill" id="gyroBar" style="background:var(--rust);"></div></div>
-        <div class="sub">Faint threshold: 75&deg;/s</div>
-      </div>
-
+    <div class="card glass card-distance">
+      <div class="label">Distance</div>
+      <div class="value"><span id="distanceValue">—</span><small>cm</small></div>
+      <div class="bar-track"><div class="bar-fill" id="distanceBar" style="background:var(--ink-soft);"></div></div>
+      <span class="zone-tag zone-clear" id="distanceZone">—</span>
     </div>
 
-    <div class="card glass head-tilt-card">
-      <div class="label">Head tilt (from level)</div>
+    <div class="card glass card-motor">
+      <div class="label">Motor Duty</div>
+      <div class="value"><span id="motorValue">—</span><small>%</small></div>
+      <div class="bar-track"><div class="bar-fill" id="motorBar" style="background:var(--rust);"></div></div>
+      <div class="sub" id="motorSub">PWM 0–255</div>
+    </div>
+
+    <div class="card glass card-tilt">
+      <div class="label">Tilt</div>
+      <div class="value"><span id="tiltValue">—</span><small>&deg;</small></div>
+      <div class="bar-track"><div class="bar-fill" id="tiltBar" style="background:var(--rust);"></div></div>
+      <div class="sub">Faint threshold: 32&deg;</div>
+    </div>
+
+    <div class="card glass card-gyro">
+      <div class="label">Gyro motion</div>
+      <div class="value"><span id="gyroValue">—</span><small>&deg;/s</small></div>
+      <div class="bar-track"><div class="bar-fill" id="gyroBar" style="background:var(--rust);"></div></div>
+      <div class="sub">Faint threshold: 75&deg;/s</div>
+    </div>
+
+    <div class="card glass card-head">
+      <div class="label">Head tilt</div>
+      
+      <!-- Minimized format with mini indicator + (p°,r°) values -->
+      <div class="head-min-content">
+        <svg class="mini-attitude" viewBox="0 0 36 36">
+          <circle cx="18" cy="18" r="16" fill="none" stroke="var(--line)" stroke-width="1"/>
+          <line x1="18" y1="2" x2="18" y2="34" stroke="var(--line)" stroke-width="0.8"/>
+          <line x1="2" y1="18" x2="34" y2="18" stroke="var(--line)" stroke-width="0.8"/>
+          <g id="miniTiltDot">
+            <circle cx="18" cy="18" r="2.5" fill="var(--rust)"/>
+          </g>
+        </svg>
+        <span class="mini-head-text" id="miniHeadText">(0.0°, 0.0°)</span>
+      </div>
+      
       <div class="attitude">
         <svg viewBox="0 0 120 120">
           <circle cx="60" cy="60" r="52" fill="none" stroke="var(--line)" stroke-width="1"/>
@@ -348,8 +427,6 @@
 <script>
 /* ============================================================
    ROTATING BRAIN + STARFIELD BACKGROUND
-   (same construction as index.html's hero: SDF-sampled points on
-   a brain-shaped surface, connected to nearest neighbors)
 ============================================================ */
 (function(){
   const canvas = document.getElementById('brain-canvas');
@@ -366,18 +443,14 @@
   const group = new THREE.Group();
   scene.add(group);
 
-  function sdSphere(x,y,z, cx,cy,cz, r){
-    const dx=x-cx,dy=y-cy,dz=z-cz;
-    return Math.sqrt(dx*dx+dy*dy+dz*dz)-r;
-  }
+  function sdSphere(x,y,z, cx,cy,cz, r){ return Math.sqrt((x-cx)**2+(y-cy)**2+(z-cz)**2)-r; }
   function sdEllipsoid(x,y,z, cx,cy,cz, rx,ry,rz){
     const nx=(x-cx)/rx, ny=(y-cy)/ry, nz=(z-cz)/rz;
     const k = Math.sqrt(nx*nx+ny*ny+nz*nz);
     return (k-1)*Math.min(rx,Math.min(ry,rz));
   }
   function sdCapsule(x,y,z, ax,ay,az, bx,by,bz, r){
-    const pax=x-ax,pay=y-ay,paz=z-az;
-    const bax=bx-ax,bay=by-ay,baz=bz-az;
+    const pax=x-ax,pay=y-ay,paz=z-az, bax=bx-ax,bay=by-ay,baz=bz-az;
     const bb = bax*bax+bay*bay+baz*baz;
     let h = bb>0 ? (pax*bax+pay*bay+paz*baz)/bb : 0;
     h = Math.max(0, Math.min(1,h));
@@ -385,13 +458,14 @@
     return Math.sqrt(dx*dx+dy*dy+dz*dz)-r;
   }
   function brainSDF(x,y,z){
-    const dMain = sdEllipsoid(x,y,z, 0,0.28,0, 1.55,1.05,0.92);
-    const dFrontal = sdSphere(x,y,z, 1.18,0.55,0, 0.56);
-    const dOccipital = sdSphere(x,y,z, -1.28,0.32,0, 0.52);
-    const dTemporal = sdEllipsoid(x,y,z, 0.22,-0.38,0, 0.66,0.46,0.6);
-    const dCerebellum = sdSphere(x,y,z, -0.55,-0.78,-0.02, 0.42);
-    const dStem = sdCapsule(x,y,z, 0.32,-0.82,0, 0.14,-1.6,0, 0.15);
-    return Math.min(dMain, dFrontal, dOccipital, dTemporal, dCerebellum, dStem);
+    return Math.min(
+      sdEllipsoid(x,y,z, 0,0.28,0, 1.55,1.05,0.92),
+      sdSphere(x,y,z, 1.18,0.55,0, 0.56),
+      sdSphere(x,y,z, -1.28,0.32,0, 0.52),
+      sdEllipsoid(x,y,z, 0.22,-0.38,0, 0.66,0.46,0.6),
+      sdSphere(x,y,z, -0.55,-0.78,-0.02, 0.42),
+      sdCapsule(x,y,z, 0.32,-0.82,0, 0.14,-1.6,0, 0.15)
+    );
   }
 
   const NODE_COUNT = 460;
@@ -399,28 +473,28 @@
   let attempts = 0;
   while(pts.length < NODE_COUNT && attempts < 500000){
     attempts++;
-    const x = (Math.random()*4.6-2.3);
-    const y = (Math.random()*4.0-2.1);
-    const z = (Math.random()*2.8-1.4);
+    const x = (Math.random()*4.6-2.3), y = (Math.random()*4.0-2.1), z = (Math.random()*2.8-1.4);
     if(Math.abs(brainSDF(x,y,z)) < 0.045) pts.push([x,y,z]);
   }
 
-  const edgeSet = new Set();
-  const edges = [];
-  const K = 3, MAX_DIST = 0.55;
+  let cx=0, cy=0, cz=0;
+  pts.forEach(p=>{ cx+=p[0]; cy+=p[1]; cz+=p[2]; });
+  cx/=pts.length; cy/=pts.length; cz/=pts.length;
+  pts.forEach(p=>{ p[0]-=cx; p[1]-=cy; p[2]-=cz; });
+
+  const edgeSet = new Set(), edges = [];
   for(let i=0;i<pts.length;i++){
     const dists = [];
     for(let j=0;j<pts.length;j++){
       if(i===j) continue;
-      const dx=pts[i][0]-pts[j][0], dy=pts[i][1]-pts[j][1], dz=pts[i][2]-pts[j][2];
-      const d = Math.sqrt(dx*dx+dy*dy+dz*dz);
-      if(d < MAX_DIST) dists.push([d,j]);
+      dists.push([Math.sqrt((pts[i][0]-pts[j][0])**2 + (pts[i][1]-pts[j][1])**2 + (pts[i][2]-pts[j][2])**2), j]);
     }
     dists.sort((a,b)=>a[0]-b[0]);
-    for(let k=0;k<Math.min(K,dists.length);k++){
-      const j = dists[k][1];
-      const key = i<j ? i+'_'+j : j+'_'+i;
-      if(!edgeSet.has(key)){ edgeSet.add(key); edges.push([i,j]); }
+    for(let k=0;k<Math.min(3,dists.length);k++){
+      if(dists[k][0] < 0.55){
+        const key = i<dists[k][1] ? i+'_'+dists[k][1] : dists[k][1]+'_'+i;
+        if(!edgeSet.has(key)){ edgeSet.add(key); edges.push([i,dists[k][1]]); }
+      }
     }
   }
 
@@ -429,8 +503,7 @@
   const dotGeo = new THREE.BufferGeometry();
   dotGeo.setAttribute('position', new THREE.BufferAttribute(dotPositions,3));
   const dotMat = new THREE.PointsMaterial({size:0.05, color:0xE4433D, transparent:true, opacity:0.9, depthWrite:false, sizeAttenuation:true});
-  const dotCloud = new THREE.Points(dotGeo, dotMat);
-  group.add(dotCloud);
+  group.add(new THREE.Points(dotGeo, dotMat));
 
   const linePositions = new Float32Array(edges.length*6);
   edges.forEach((e,i)=>{
@@ -439,203 +512,160 @@
   });
   const lineGeo = new THREE.BufferGeometry();
   lineGeo.setAttribute('position', new THREE.BufferAttribute(linePositions,3));
-  const lineMat = new THREE.LineBasicMaterial({color:0xF4F4F7, transparent:true, opacity:0.2});
-  const lineMesh = new THREE.LineSegments(lineGeo, lineMat);
-  group.add(lineMesh);
+  group.add(new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({color:0xF4F4F7, transparent:true, opacity:0.2})));
 
-  group.scale.set(1.5,1.5,1.5);
-  group.rotation.y = -0.4;
+  const displacement = new Float32Array(pts.length*3), targetDisplacement = new Float32Array(pts.length*3);
+  const attractRaycaster = new THREE.Raycaster(), attractMouseNDC = new THREE.Vector2(-10,-10);
+  const attractPlane = new THREE.Plane(new THREE.Vector3(0,0,1), 0);
+  const attractCursorWorld = new THREE.Vector3(), attractCursorLocal = new THREE.Vector3(), attractInvMatrix = new THREE.Matrix4();
+  let attractActive = false;
 
-  const pulseIdx = [];
-  for(let i=0;i<70;i++) pulseIdx.push(Math.floor(Math.random()*pts.length));
+  window.addEventListener('mousemove', (e)=>{ attractMouseNDC.x = (e.clientX/window.innerWidth)*2-1; attractMouseNDC.y = -(e.clientY/window.innerHeight)*2+1; attractActive = true; });
+  window.addEventListener('mouseleave', ()=>{ attractActive = false; });
+
+  function updateAttraction(){
+    targetDisplacement.fill(0);
+    if(attractActive && attractRaycaster.setFromCamera(attractMouseNDC, camera) && attractRaycaster.ray.intersectPlane(attractPlane, attractCursorWorld)){
+      group.updateMatrixWorld();
+      attractCursorLocal.copy(attractCursorWorld).applyMatrix4(attractInvMatrix.copy(group.matrixWorld).invert());
+      let closestIdx = -1, closestDistSq = Infinity;
+      for(let i=0;i<pts.length;i++){
+        const d = (pts[i][0]-attractCursorLocal.x)**2 + (pts[i][1]-attractCursorLocal.y)**2 + (pts[i][2]-attractCursorLocal.z)**2;
+        if(d<closestDistSq){ closestDistSq=d; closestIdx=i; }
+      }
+      if(closestIdx>=0){
+        let dx=attractCursorLocal.x-pts[closestIdx][0], dy=attractCursorLocal.y-pts[closestIdx][1], dz=attractCursorLocal.z-pts[closestIdx][2];
+        const dist = Math.sqrt(dx*dx+dy*dy+dz*dz) || 0.0001, travel = Math.max(0, dist - 0.16);
+        targetDisplacement[closestIdx*3] = (dx/dist)*travel; targetDisplacement[closestIdx*3+1] = (dy/dist)*travel; targetDisplacement[closestIdx*3+2] = (dz/dist)*travel;
+      }
+    }
+    for(let i=0;i<pts.length;i++){
+      const i3=i*3;
+      displacement[i3] += (targetDisplacement[i3]-displacement[i3])*0.12; displacement[i3+1] += (targetDisplacement[i3+1]-displacement[i3+1])*0.12; displacement[i3+2] += (targetDisplacement[i3+2]-displacement[i3+2])*0.12;
+      dotPositions[i3] = pts[i][0]+displacement[i3]; dotPositions[i3+1] = pts[i][1]+displacement[i3+1]; dotPositions[i3+2] = pts[i][2]+displacement[i3+2];
+    }
+    dotGeo.attributes.position.needsUpdate = true;
+    edges.forEach((e,i)=>{ linePositions[i*6]=dotPositions[e[0]*3]; linePositions[i*6+1]=dotPositions[e[0]*3+1]; linePositions[i*6+2]=dotPositions[e[0]*3+2]; linePositions[i*6+3]=dotPositions[e[1]*3]; linePositions[i*6+4]=dotPositions[e[1]*3+1]; linePositions[i*6+5]=dotPositions[e[1]*3+2]; });
+    lineGeo.attributes.position.needsUpdate = true;
+  }
+
+  group.scale.set(1.5,1.5,1.5); group.rotation.y = -0.4;
+  const pulseIdx = Array.from({length:70}, ()=>Math.floor(Math.random()*pts.length));
   const dotColorAttr = new THREE.Float32BufferAttribute(new Float32Array(pts.length*3), 3);
-  for(let i=0;i<pts.length;i++){ dotColorAttr.setXYZ(i, 0.894,0.263,0.239); }
   dotGeo.setAttribute('color', dotColorAttr);
   dotMat.vertexColors = true;
-
-  // ---- starfield ----
-  const STAR_PALETTE = [
-    [0.55, 0.68, 1.00],
-    [0.85, 0.90, 1.00],
-    [1.00, 0.96, 0.88],
-    [1.00, 0.78, 0.48],
-    [1.00, 0.55, 0.42],
-  ];
-  const STAR_WEIGHTS = [0.14, 0.34, 0.28, 0.16, 0.08];
-  function pickStarColor(){
-    let r = Math.random(), acc = 0;
-    for(let i=0;i<STAR_WEIGHTS.length;i++){
-      acc += STAR_WEIGHTS[i];
-      if(r <= acc) return STAR_PALETTE[i];
-    }
-    return STAR_PALETTE[STAR_PALETTE.length-1];
-  }
-  function makeStarLayer(count, radiusMin, radiusMax, size, baseOpacity){
-    const positions = new Float32Array(count*3);
-    const colors = new Float32Array(count*3);
-    const baseColors = new Float32Array(count*3);
-    for(let i=0;i<count;i++){
-      const u = Math.random()*Math.PI*2, v = Math.acos(2*Math.random()-1);
-      const r = radiusMin + Math.random()*(radiusMax-radiusMin);
-      positions[i*3]   = r*Math.sin(v)*Math.cos(u);
-      positions[i*3+1] = r*Math.cos(v);
-      positions[i*3+2] = r*Math.sin(v)*Math.sin(u);
-      const c = pickStarColor();
-      const dim = 0.5 + Math.random()*0.5;
-      colors[i*3]=c[0]*dim; colors[i*3+1]=c[1]*dim; colors[i*3+2]=c[2]*dim;
-      baseColors[i*3]=colors[i*3]; baseColors[i*3+1]=colors[i*3+1]; baseColors[i*3+2]=colors[i*3+2];
-    }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions,3));
-    const colorAttr = new THREE.BufferAttribute(colors,3);
-    geo.setAttribute('color', colorAttr);
-    const mat = new THREE.PointsMaterial({size, vertexColors:true, transparent:true, opacity:baseOpacity, depthWrite:false, sizeAttenuation:true});
-    const points = new THREE.Points(geo, mat);
-    return {points, colorAttr, baseColors, count};
-  }
-  const starsFar = makeStarLayer(700, 11, 30, 0.05, 0.5);
-  const starsNear = makeStarLayer(160, 9, 16, 0.09, 0.75);
-  const starGroup = new THREE.Group();
-  starGroup.add(starsFar.points, starsNear.points);
-  scene.add(starGroup);
-
-  const twinkleFar = [];
-  for(let i=0;i<50;i++) twinkleFar.push({idx:Math.floor(Math.random()*starsFar.count), phase:Math.random()*Math.PI*2, speed:0.4+Math.random()*0.5});
-  function updateTwinkle(layer, list, t){
-    list.forEach(s=>{
-      const b = 0.4 + 0.6*((Math.sin(t*s.speed + s.phase)+1)/2);
-      layer.colorAttr.setXYZ(s.idx, layer.baseColors[s.idx*3]*b, layer.baseColors[s.idx*3+1]*b, layer.baseColors[s.idx*3+2]*b);
-    });
-    layer.colorAttr.needsUpdate = true;
-  }
 
   const clock = new THREE.Clock();
   function animate(){
     requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
-    group.rotation.y = -0.4 + t*0.14;
-    group.rotation.x = Math.sin(t*0.15)*0.05;
-
+    group.rotation.y = -0.4 + t*0.14; group.rotation.x = Math.sin(t*0.15)*0.05;
     const pulse = (Math.sin(t*1.4)+1)/2;
-    pulseIdx.forEach(i=>{
-      dotColorAttr.setXYZ(i, 0.894+pulse*0.10, 0.263+pulse*0.25, 0.239+pulse*0.26);
-    });
+    for(let i=0;i<pts.length;i++){ dotColorAttr.setXYZ(i, 0.894,0.263,0.239); }
+    pulseIdx.forEach(i=>{ dotColorAttr.setXYZ(i, 0.894+pulse*0.10, 0.263+pulse*0.25, 0.239+pulse*0.26); });
     dotColorAttr.needsUpdate = true;
-
-    starGroup.rotation.y = t*0.006;
-    updateTwinkle(starsFar, twinkleFar, t);
-
+    updateAttraction();
     renderer.render(scene, camera);
   }
   animate();
-
-  function onResize(){
-    width = window.innerWidth; height = window.innerHeight;
-    camera.aspect = width/height; camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
-  }
-  window.addEventListener('resize', onResize);
+  window.addEventListener('resize', ()=>{ width = window.innerWidth; height = window.innerHeight; camera.aspect = width/height; camera.updateProjectionMatrix(); renderer.setSize(width, height); });
 })();
 
 /* ============================================================
-   TELEMETRY — unchanged logic
+   GLOBAL CARD EXPANSION LOGIC & LONGEST-TO-SHORTEST SORTING
+============================================================ */
+(function(){
+  const mainLayout = document.getElementById('mainLayout');
+  const allCards = Array.from(mainLayout.querySelectorAll('.card'));
+
+  allCards.forEach(card => {
+    card.addEventListener('click', () => {
+      if (card.classList.contains('expanded')) {
+        mainLayout.classList.remove('has-expanded');
+        allCards.forEach(c => {
+          c.classList.remove('expanded', 'minimized');
+          c.style.top = '';
+        });
+        return;
+      }
+
+      mainLayout.classList.add('has-expanded');
+      
+      const minimizedCards = allCards.filter(c => c !== card);
+
+      // Sort minimized cards:
+      // 1. Head tilt card (.card-head) always locked at the top
+      // 2. Remaining cards sorted longest to shortest by label text length
+      minimizedCards.sort((a, b) => {
+        const isHeadA = a.classList.contains('card-head');
+        const isHeadB = b.classList.contains('card-head');
+        if (isHeadA) return -1;
+        if (isHeadB) return 1;
+
+        const lenA = a.querySelector('.label').textContent.trim().length;
+        const lenB = b.querySelector('.label').textContent.trim().length;
+        return lenB - lenA; // Longest to shortest
+      });
+
+      card.classList.remove('minimized');
+      card.classList.add('expanded');
+      card.style.top = '';
+
+      minimizedCards.forEach((c, index) => {
+        c.classList.remove('expanded');
+        c.classList.add('minimized');
+        c.style.top = `${20 + (index * 54)}px`;
+      });
+    });
+  });
+})();
+
+/* ============================================================
+   TELEMETRY
 ============================================================ */
 (function(){
   const els = {
-    connDot: document.getElementById('connDot'),
-    connLabel: document.getElementById('connLabel'),
-    wsUrlInput: document.getElementById('wsUrlInput'),
-    connectBtn: document.getElementById('connectBtn'),
-    rateLabel: document.getElementById('rateLabel'),
-    urlEcho: document.getElementById('urlEcho'),
-    faintBanner: document.getElementById('faintBanner'),
-    faintSub: document.getElementById('faintSub'),
-    postureDot: document.getElementById('postureDot'),
-    postureText: document.getElementById('postureText'),
-    postureSub: document.getElementById('postureSub'),
-    distanceValue: document.getElementById('distanceValue'),
-    distanceBar: document.getElementById('distanceBar'),
-    distanceZone: document.getElementById('distanceZone'),
-    motorValue: document.getElementById('motorValue'),
-    motorBar: document.getElementById('motorBar'),
-    motorSub: document.getElementById('motorSub'),
-    pitchValue: document.getElementById('pitchValue'),
-    rollValue: document.getElementById('rollValue'),
-    tiltDot: document.getElementById('tiltDot'),
-    tiltValue: document.getElementById('tiltValue'),
-    tiltBar: document.getElementById('tiltBar'),
-    gyroValue: document.getElementById('gyroValue'),
-    gyroBar: document.getElementById('gyroBar'),
-    rawFeed: document.getElementById('rawFeed'),
+    connDot: document.getElementById('connDot'), connLabel: document.getElementById('connLabel'), wsUrlInput: document.getElementById('wsUrlInput'),
+    connectBtn: document.getElementById('connectBtn'), rateLabel: document.getElementById('rateLabel'), urlEcho: document.getElementById('urlEcho'),
+    faintBanner: document.getElementById('faintBanner'), faintSub: document.getElementById('faintSub'), postureDot: document.getElementById('postureDot'),
+    postureText: document.getElementById('postureText'), postureSub: document.getElementById('postureSub'),
+    distanceValue: document.getElementById('distanceValue'), distanceBar: document.getElementById('distanceBar'), distanceZone: document.getElementById('distanceZone'),
+    motorValue: document.getElementById('motorValue'), motorBar: document.getElementById('motorBar'), motorSub: document.getElementById('motorSub'),
+    pitchValue: document.getElementById('pitchValue'), rollValue: document.getElementById('rollValue'), tiltDot: document.getElementById('tiltDot'),
+    tiltValue: document.getElementById('tiltValue'), tiltBar: document.getElementById('tiltBar'), gyroValue: document.getElementById('gyroValue'),
+    gyroBar: document.getElementById('gyroBar'), rawFeed: document.getElementById('rawFeed'),
+    miniHeadText: document.getElementById('miniHeadText'), miniTiltDot: document.getElementById('miniTiltDot')
   };
 
-  const NO_OBSTACLE_DISTANCE_MM = 2001;
-  const HAPTIC_START_DISTANCE_MM = 1000;
-  const HAPTIC_FULL_DISTANCE_MM = 100;
-  const FAINT_FINAL_TILT_DEG = 32.0;
-  const FAINT_GYRO_DPS = 75.0;
-
-  let ws = null;
-  let reconnectTimer = null;
-  let lastMsgAt = 0;
-  let msgTimestamps = [];
-  let wasFainted = false;
+  const NO_OBSTACLE_DISTANCE_MM = 2001, HAPTIC_START_DISTANCE_MM = 1000, HAPTIC_FULL_DISTANCE_MM = 100, FAINT_FINAL_TILT_DEG = 32.0, FAINT_GYRO_DPS = 75.0;
+  let ws = null, reconnectTimer = null, lastMsgAt = 0, msgTimestamps = [], wasFainted = false;
 
   function clamp01(n){ return Math.max(0, Math.min(1, n)); }
-
-  function setConnState(state, label){
-    els.connDot.className = 'conn-dot ' + state;
-    els.connLabel.textContent = label;
-  }
-
-  function buildUrl(raw){
-    let v = raw.trim();
-    if(v.startsWith('ws://') || v.startsWith('wss://')) return v;
-    if(!v.includes(':')) v += ':81';
-    return 'ws://' + v + '/';
-  }
+  function setConnState(state, label){ els.connDot.className = 'conn-dot ' + state; els.connLabel.textContent = label; }
 
   function connect(){
     clearTimeout(reconnectTimer);
-    const url = buildUrl(els.wsUrlInput.value);
+    let url = els.wsUrlInput.value.trim();
+    if(!url.startsWith('ws://') && !url.startsWith('wss://')) url = 'ws://' + url;
+    if(!url.replace(/^wss?:\/\//, '').includes(':')) url += ':81';
+    
     els.urlEcho.textContent = url;
     setConnState('connecting', 'Connecting…');
 
-    try{
-      ws = new WebSocket(url);
-    } catch(e){
-      setConnState('disconnected', 'Invalid address');
-      scheduleReconnect();
-      return;
-    }
+    try{ ws = new WebSocket(url); } catch(e){ setConnState('disconnected', 'Invalid address'); reconnectTimer = setTimeout(connect, 1500); return; }
 
-    ws.onopen = () => {
-      setConnState('connected', 'Connected');
-    };
-    ws.onclose = () => {
-      setConnState('disconnected', 'Disconnected — retrying…');
-      scheduleReconnect();
-    };
+    ws.onopen = () => setConnState('connected', 'Connected');
+    ws.onclose = () => { setConnState('disconnected', 'Disconnected — retrying…'); reconnectTimer = setTimeout(connect, 1500); };
     ws.onerror = () => {};
     ws.onmessage = (evt) => {
       lastMsgAt = performance.now();
-      msgTimestamps.push(lastMsgAt);
-      msgTimestamps = msgTimestamps.filter(t => lastMsgAt - t < 1000);
-      let data;
-      try{
-        data = JSON.parse(evt.data);
-      } catch(e){
-        els.rawFeed.textContent = 'Could not parse message:\n' + evt.data;
-        return;
-      }
-      render(data);
-      els.rawFeed.textContent = JSON.stringify(data, null, 2);
+      msgTimestamps.push(lastMsgAt); msgTimestamps = msgTimestamps.filter(t => lastMsgAt - t < 1000);
+      try{ 
+        const d = JSON.parse(evt.data);
+        render(d);
+        els.rawFeed.textContent = JSON.stringify(d, null, 2);
+      } catch(e){}
     };
-  }
-
-  function scheduleReconnect(){
-    clearTimeout(reconnectTimer);
-    reconnectTimer = setTimeout(connect, 1500);
   }
 
   function render(d){
@@ -644,57 +674,34 @@
     els.postureText.textContent = fainted ? 'Fainted' : 'Upright';
     els.postureSub.textContent = fainted ? 'Motor at full strength' : 'No faint detected';
     els.faintBanner.classList.toggle('show', fainted);
-    if(fainted && !wasFainted){
-      els.faintSub.textContent = 'Detected just now — motor is buzzing at full strength';
-    }
+    if(fainted && !wasFainted) els.faintSub.textContent = 'Detected just now — motor is buzzing at full strength';
     wasFainted = fainted;
 
-    const distanceValid = d.distanceValid !== false && typeof d.distance === 'number' && d.distance < NO_OBSTACLE_DISTANCE_MM;
-    if(distanceValid){
-      const cm = (d.distance / 10).toFixed(1);
-      els.distanceValue.textContent = cm;
-      const closeness = clamp01((HAPTIC_START_DISTANCE_MM - d.distance) / (HAPTIC_START_DISTANCE_MM - HAPTIC_FULL_DISTANCE_MM));
-      const barPct = clamp01((2000 - d.distance) / 2000) * 100;
-      els.distanceBar.style.width = barPct + '%';
-      if(d.distance <= HAPTIC_FULL_DISTANCE_MM){
-        els.distanceBar.style.background = 'var(--danger)';
-        els.distanceBar.style.boxShadow = '0 0 10px 1px rgba(140,19,39,0.7)';
-        els.distanceZone.textContent = 'Full intensity';
-        els.distanceZone.className = 'zone-tag zone-danger';
-      } else if(d.distance < HAPTIC_START_DISTANCE_MM){
-        els.distanceBar.style.background = 'var(--alert)';
-        els.distanceBar.style.boxShadow = '0 0 8px 1px rgba(228,67,61,0.55)';
-        els.distanceZone.textContent = 'Buzzing (' + Math.round(closeness*100) + '%)';
-        els.distanceZone.className = 'zone-tag zone-alert';
-      } else {
-        els.distanceBar.style.background = 'var(--ink-soft)';
-        els.distanceBar.style.boxShadow = 'none';
-        els.distanceZone.textContent = 'Clear';
-        els.distanceZone.className = 'zone-tag zone-clear';
-      }
+    if(d.distanceValid !== false && typeof d.distance === 'number' && d.distance < NO_OBSTACLE_DISTANCE_MM){
+      els.distanceValue.textContent = (d.distance / 10).toFixed(1);
+      els.distanceBar.style.width = clamp01((2000 - d.distance) / 2000) * 100 + '%';
+      if(d.distance <= HAPTIC_FULL_DISTANCE_MM){ els.distanceBar.style.background = 'var(--danger)'; els.distanceZone.textContent = 'Full intensity'; els.distanceZone.className = 'zone-tag zone-danger'; }
+      else if(d.distance < HAPTIC_START_DISTANCE_MM){ els.distanceBar.style.background = 'var(--alert)'; els.distanceZone.textContent = 'Buzzing'; els.distanceZone.className = 'zone-tag zone-alert'; }
+      else { els.distanceBar.style.background = 'var(--ink-soft)'; els.distanceZone.textContent = 'Clear'; els.distanceZone.className = 'zone-tag zone-clear'; }
     } else {
-      els.distanceValue.textContent = '—';
-      els.distanceBar.style.width = '0%';
-      els.distanceZone.textContent = 'No obstacle (≥2m)';
-      els.distanceZone.className = 'zone-tag zone-clear';
+      els.distanceValue.textContent = '—'; els.distanceBar.style.width = '0%'; els.distanceZone.textContent = 'No obstacle (≥2m)'; els.distanceZone.className = 'zone-tag zone-clear';
     }
 
     const duty = typeof d.motorDuty === 'number' ? d.motorDuty : (d.motors || 0);
-    const dutyPct = Math.round((duty/255)*100);
-    els.motorValue.textContent = dutyPct;
-    els.motorBar.style.width = dutyPct + '%';
+    els.motorValue.textContent = Math.round((duty/255)*100);
+    els.motorBar.style.width = (duty/255)*100 + '%';
     els.motorBar.style.background = duty >= 255 ? 'var(--danger)' : 'var(--rust)';
-    els.motorBar.style.boxShadow = duty > 0 ? '0 0 8px 1px rgba(228,67,61,0.5)' : 'none';
     els.motorSub.textContent = 'raw duty ' + duty + ' / 255';
 
-    const pitch = typeof d.pitch === 'number' ? d.pitch : 0;
-    const roll = typeof d.roll === 'number' ? d.roll : 0;
-    els.pitchValue.textContent = pitch.toFixed(1);
-    els.rollValue.textContent = roll.toFixed(1);
-    const maxDeg = 45;
-    const dx = clamp01((roll + maxDeg) / (maxDeg*2)) * 88 + 16;
-    const dy = clamp01((pitch + maxDeg) / (maxDeg*2)) * 88 + 16;
-    els.tiltDot.setAttribute('transform', `translate(${dx-60}, ${dy-60})`);
+    const pitch = typeof d.pitch === 'number' ? d.pitch : 0, roll = typeof d.roll === 'number' ? d.roll : 0;
+    els.pitchValue.textContent = pitch.toFixed(1); els.rollValue.textContent = roll.toFixed(1);
+    
+    els.miniHeadText.textContent = `(${pitch.toFixed(1)}°, ${roll.toFixed(1)}°)`;
+    const mdx = clamp01((roll + 45) / 90) * 28 + 4;
+    const mdy = clamp01((pitch + 45) / 90) * 28 + 4;
+    els.miniTiltDot.setAttribute('transform', `translate(${mdx - 18}, ${mdy - 18})`);
+
+    els.tiltDot.setAttribute('transform', `translate(${clamp01((roll+45)/90)*88+16-60}, ${clamp01((pitch+45)/90)*88+16-60})`);
 
     const tilt = typeof d.tilt === 'number' ? d.tilt : 0;
     els.tiltValue.textContent = tilt.toFixed(1);
@@ -709,23 +716,14 @@
 
   setInterval(() => {
     if(!ws || ws.readyState !== WebSocket.OPEN) return;
-    const sinceLast = performance.now() - lastMsgAt;
-    if(lastMsgAt && sinceLast > 1000){
-      setConnState('stale', 'Connected, no data (' + Math.round(sinceLast/1000) + 's)');
-    } else if(lastMsgAt){
-      setConnState('connected', 'Connected');
-    }
+    const since = performance.now() - lastMsgAt;
+    if(lastMsgAt && since > 1000) setConnState('stale', 'Connected, no data (' + Math.round(since/1000) + 's)');
+    else if(lastMsgAt) setConnState('connected', 'Connected');
     els.rateLabel.textContent = msgTimestamps.length ? msgTimestamps.length + ' msg/s' : '';
   }, 400);
 
-  els.connectBtn.addEventListener('click', () => {
-    if(ws) ws.close();
-    connect();
-  });
-  els.wsUrlInput.addEventListener('keydown', (e) => {
-    if(e.key === 'Enter'){ if(ws) ws.close(); connect(); }
-  });
-
+  els.connectBtn.addEventListener('click', () => { if(ws) ws.close(); connect(); });
+  els.wsUrlInput.addEventListener('keydown', (e) => { if(e.key === 'Enter'){ if(ws) ws.close(); connect(); } });
   connect();
 })();
 </script>

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # NeuroNav: Spatial Telemetry & Haptic Matrix
 
 NeuroNav is a 36-hour hackathon project designed to provide intuitive spatial awareness through haptic feedback while broadcasting live posture and proximity telemetry to a remote caregiver dashboard.
@@ -34,3 +35,7 @@ Ensure you have Node.js installed.
 cd dashboard
 npm install
 npm run dev
+=======
+# NeuroNav
+Building modular alternatives to dedicated wheelchair systems for users with other conditions.
+>>>>>>> 0d5f14edec289abc40103736044f92abbc76b5e5
