@@ -17,6 +17,7 @@
     --ink-soft:#9AA3BC;
     --rust:#E4433D;
     --rust-deep:#9E1B2E;
+    --ytred:#E4433D;
     --ok:#4ADE80;
   }
   *{box-sizing:border-box;}
@@ -34,7 +35,7 @@
   a{color:inherit; text-decoration:none;}
   ::selection{background:var(--rust); color:var(--ink);}
 
-  /* ---------- background (persistent — behind hero AND deck, never swapped) ---------- */
+  /* ---------- background ---------- */
   #brain-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
   .bg-glow{
     position:fixed;top:-20%;right:-10%;width:60vw;height:60vw;
@@ -69,7 +70,7 @@
   .nav-cta:hover{background:var(--rust);}
   @media (max-width:680px){ .nav-links a:not(.nav-cta){display:none;} }
 
-  /* ---------- HERO (pinned, scrolls seamlessly into the deck below) ---------- */
+  /* ---------- HERO ---------- */
   .hero-pin-wrap{position:relative;height:240vh;}
   .hero-pin{
     position:sticky;top:0;height:100vh;overflow:hidden;
@@ -97,11 +98,11 @@
   .scroll-cue::after{content:'';width:1px;height:34px;background:rgba(244,244,247,0.3);animation:cuefall 1.8s ease-in-out infinite;}
   @keyframes cuefall{0%{transform:scaleY(0.3);opacity:0.3;}50%{transform:scaleY(1);opacity:1;}100%{transform:scaleY(0.3);opacity:0.3;}}
 
-  /* ---------- FULL PAGE SLIDESHOW CONTAINER ---------- */
+  /* ---------- FULL PAGE SLIDESHOW ---------- */
   .deck-container {
     min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
     position: relative; z-index: 10;
-    padding: 80px 2.5vw 30px; /* takes up more of the page than before */
+    padding: 80px 2.5vw 30px; 
     width: 100%;
   }
 
@@ -136,7 +137,7 @@
   .slide.active { opacity: 1; pointer-events: all; transform: translateZ(0) translateY(0) scale(1); }
   .slide.past { transform: translateZ(100px) translateY(-40px) scale(1.05); }
 
-  /* ---------- INTERACTIVE TEXT ANIMATIONS (slowed down) ---------- */
+  /* ---------- ANIMATIONS ---------- */
   .anim-elem {
     opacity: 0;
     transform: translateY(20px);
@@ -162,7 +163,6 @@
 
   .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(16px, 3vw, 32px); margin-top: 2vh; }
 
-  /* feature boxes: hidden until revealed one-by-one via the next arrow */
   .feature-box {
     background: rgba(255,255,255,0.02); border: 1px solid var(--line);
     padding: clamp(20px, 3vh, 32px); border-radius: 20px;
@@ -178,6 +178,56 @@
     margin-top: 2vh; font-size: 13px; color: var(--ink-soft); opacity: 0.7;
   }
 
+  /* ---------- LOCAL VIDEO OVERLAY & YT BUTTON ---------- */
+  .demo-content-wrapper {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .demo-content-wrapper.hidden {
+    opacity: 0; pointer-events: none; transform: scale(0.95);
+  }
+  .video-wrapper {
+    position: absolute; inset: 0;
+    padding: clamp(24px, 4vh, 60px) clamp(24px, 4vw, 80px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    transform: scale(0.95);
+  }
+  .video-wrapper.active {
+    opacity: 1; pointer-events: all; transform: scale(1); z-index: 10;
+  }
+  .video-wrapper video {
+    width: 100%; height: 100%;
+    border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6); background: #000;
+    object-fit: contain;
+  }
+  .yt-out-btn {
+    position: absolute;
+    bottom: clamp(90px, 12vh, 120px); /* Positioned higher up to avoid progress bars */
+    left: clamp(100px, 12vw, 60px);     /* Positioned closer to the left side */
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 99px;
+    font-size: 14px;
+    font-weight: 500;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: all 0.2s;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .yt-out-btn:hover {
+    background: var(--ytred);
+    border-color: var(--ytred);
+    transform: translateY(-2px);
+  }
+
   /* ---------- CONTROLS ---------- */
   .controls { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 20px; padding: 0 2vw; }
   .btn-nav {
@@ -191,7 +241,6 @@
   .btn-nav:disabled { opacity: 0.2; cursor: not-allowed; }
   .btn-nav svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  /* bubble indicator — small round dots instead of wide bars */
   .progress-container { display: flex; gap: 9px; align-items: center; }
   .dot {
     width: 9px; height: 9px; border-radius: 50%;
@@ -206,7 +255,7 @@
     background: var(--rust); color: #fff; padding: 20px 42px;
     border-radius: 999px; font-size: clamp(16px, 1.5vw, 20px); font-weight: 600; margin-top: 3vh;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid rgba(255,255,255,0.2);
-    box-shadow: 0 0 30px rgba(228,67,61,0.4);
+    box-shadow: 0 0 30px rgba(228,67,61,0.4); cursor: pointer;
   }
   .demo-btn:hover { background: #ff554f; transform: translateY(-4px) scale(1.03); box-shadow: 0 12px 40px rgba(228,67,61,0.6); }
 
@@ -224,23 +273,23 @@
 <div class="p-ring" id="ring2" style="width:820px;height:820px;margin:-410px 0 0 -410px;"></div>
 
 <nav class="site-nav">
-  <a href="index.html" class="nav-mark">Neuro<span>Nav</span></a>
+  <a href="../" class="nav-mark">Neuro<span>Nav</span></a>
   <div class="nav-links">
-    <a href="Slideshow.html">Pitch Deck</a>
-    <a href="live.html" class="nav-cta">Live Simulation</a>
+    <a href="#">Slideshow</a>
+    <a href="https://youtu.be/0ZP9g4d0OWc" class="nav-cta">Watch Recorded Demo</a>
   </div>
 </nav>
 
-<!-- ============ HERO (pinned, then scrolls straight into the deck) ============ -->
+<!-- ============ HERO ============ -->
 <div class="hero-pin-wrap" id="heroWrap">
   <div class="hero-pin">
     <div class="hero-stack">
       <h1 class="hero-title" id="heroTitle">Neuro<span>Nav</span></h1>
       <p class="hero-tagline" id="heroTagline">Real-Time Haptic Navigation and Posture Monitor</p>
-      <p class="hero-blurb" id="heroBlurb">A non-invasive sensor suite that turns physical proximity and faint detection into a haptic feedback matrix — a room's geometry can be read entirely through touch.</p>
+      <p class="hero-blurb" id="heroBlurb">A non-invasive sensor suite that turns physical proximity and faint detection into a haptic feedback matrix, relaying information to authorized caregivers and HCPs <i>if opted in.</i></p>
       <div class="hero-stats" id="heroStats">
-        <div class="stat"><div class="num">12</div><div class="lab">haptic motors</div></div>
-        <div class="stat"><div class="num">20Hz</div><div class="lab">sensor poll rate</div></div>
+        <div class="stat"><div class="num">3+</div><div class="lab">haptic motors</div></div>
+        <div class="stat"><div class="num">40Hz</div><div class="lab">sensor poll rate</div></div>
         <div class="stat"><div class="num">3</div><div class="lab">proximity zones</div></div>
         <div class="stat"><div class="num">36h</div><div class="lab">build window</div></div>
       </div>
@@ -268,11 +317,11 @@
         <div class="slide-eyebrow anim-elem">The Solution</div>
         <h2 class="slide-title serif anim-elem">What NeuroNav Does</h2>
         <div class="slide-content anim-elem">
-          <p>We built a <b><sub-$50>sensor suite with haptic feedback</b> offering faint + obstacle detection.</p>
+          <p>We built a <b>sub-$50 sensor suite with haptic feedback</b> offering faint + obstacle detection.</p>
         </div>
       </div>
 
-      <!-- Slide 3: Features (click-to-reveal) -->
+      <!-- Slide 3: Features -->
       <div class="slide">
         <div class="slide-eyebrow anim-elem">Capabilities</div>
         <h2 class="slide-title serif anim-elem">Key Features</h2>
@@ -291,34 +340,43 @@
           </div>
           <div class="feature-box">
             <h4>Live Web Dashboard</h4>
-            <p>A Next.js zero-latency interface allows caregivers to monitor the user's posture and surroundings remotely.</p>
+            <p>A Next.js zero-latency interface allows caregivers & authorized HCPs to monitor the user's posture and surroundings remotely</p>
           </div>
         </div>
         <div class="feature-hint" id="featureHint">Click the arrow to reveal each feature →</div>
       </div>
 
-      <!-- Slide 4: Demo (swapped ahead of Future) -->
-      <div class="slide" style="align-items: center; text-align: center;">
-        <div class="slide-eyebrow anim-elem">Live Demo</div>
-        <h2 class="slide-title serif anim-elem" style="font-size: clamp(48px, 6vw, 84px);">See it in action.</h2>
-        <div class="slide-content anim-elem">
-          <p>Experience the zero-latency spatial telemetry and posture monitoring dashboard.</p>
-          <a href="live.html" class="demo-btn anim-elem">
-            Launch Web Dashboard
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      <!-- Slide 4: Demo (Local Video) -->
+      <div class="slide" id="demoSlide" style="align-items: center; text-align: center;">
+        <div class="demo-content-wrapper" id="demoContent">
+          <div class="slide-eyebrow anim-elem">Product Demonstration</div>
+          <h2 class="slide-title serif anim-elem" style="font-size: clamp(48px, 6vw, 84px);">See the dashboard in action</h2>
+          <div class="slide-content anim-elem">
+            <p>See what authorized caregivers and HCPs can monitor in real-time.</p>
+            <button class="demo-btn anim-elem" id="showVideoBtn">
+                Watch a Recorded Demo
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+          </div>
+        </div>
+        <div class="video-wrapper" id="videoWrapper">
+          <video id="localVideo" src="neuronav-demo.mp4" controls playsinline></video>
+          <a href="https://www.youtube.com/watch?v=0ZP9g4d0OWc" target="_blank" class="yt-out-btn">
+            Watch on YouTube
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
           </a>
         </div>
       </div>
 
-      <!-- Slide 5: Future (swapped after Demo) -->
+      <!-- Slide 5: Future -->
       <div class="slide">
-        <div class="slide-eyebrow anim-elem">The Future</div>
-        <h2 class="slide-title serif anim-elem">NeuroNav additions</h2>
+        <div class="slide-eyebrow anim-elem">What's Next?</div>
+        <h2 class="slide-title serif anim-elem">NeuroNav in the Future</h2>
         <div class="slide-content anim-elem">
           <ul>
-            <li><b>Neural EEG Integration:</b> Implementing electroencephalography sensors inside a helmet to read brainwaves for pinpoint detection of loss of consciousness.</li>
-            <li><b>Custom PCB:</b> Improve wire management and scalability of NeuroNav to <b>HCPs</b> and patients.</li>
-            <li><b>Custom CAD/CAM Mounts:</b> Transitioning to 3D-printed mounts / injection molding for seamless installation on any wheelchair model.</li>
+            <li><b>Large Scale Multinodal EEG Integration:</b> Implementing electroencephalography sensors inside a helmet to read brainwaves for pinpoint detection of loss of consciousness more precisely</li>
+            <li><b>PCB Fabrication and Design:</b> Improve wire management and scalability of NeuroNav to <b>HCPs</b> and patients</li>
+            <li><b>Custom CAD/CAM Parts:</b> Transitioning to 3D-printed mounts / injection molding for seamless installation on any wheelchair model for widespread compatibility</li>
           </ul>
         </div>
       </div>
@@ -328,13 +386,13 @@
         <div class="slide-eyebrow anim-elem">Q&A</div>
         <h2 class="slide-title serif anim-elem" style="font-size: clamp(48px, 6vw, 84px);">Questions?</h2>
         <div class="slide-content anim-elem">
-          <p>We'd love to hear your thoughts, feedback, and answer any questions about the hardware, telemetry, or future scope.</p>
+          <p>We'd love to hear your thoughts, feedback, and answer any questions about the hardware, telemetry, or future scope</p>
         </div>
       </div>
 
       <!-- Slide 7: Thank You -->
       <div class="slide" style="align-items: center; text-align: center;">
-        <div class="slide-eyebrow anim-elem">End of Presentation</div>
+        <div class="slide-eyebrow anim-elem">End</div>
         <h2 class="slide-title serif anim-elem" style="font-size: clamp(48px, 6vw, 84px);">Thank You.</h2>
         <div class="slide-content anim-elem">
           <p><b>NeuroNav</b><br><i>Enoch Shum, Connor Doty</i></p>
@@ -369,11 +427,46 @@ const nextBtn = document.getElementById('nextBtn');
 const dotContainer = document.getElementById('dotContainer');
 let currentIdx = 0;
 
+// ---- Local Video & YT Button Logic ----
+const showVideoBtn = document.getElementById('showVideoBtn');
+const videoWrapper = document.getElementById('videoWrapper');
+const demoContent = document.getElementById('demoContent');
+const localVideo = document.getElementById('localVideo');
+const demoSlideIndex = Array.from(slides).findIndex(s => s.id === 'demoSlide');
+let isVideoActive = false;
+
+if (showVideoBtn) {
+  showVideoBtn.addEventListener('click', () => {
+    isVideoActive = true;
+    demoContent.classList.add('hidden');
+    videoWrapper.classList.add('active');
+    if (localVideo) {
+      localVideo.play().catch(e => console.log("Autoplay prevented:", e));
+    }
+  });
+}
+
+function resetVideo() {
+  isVideoActive = false;
+  if (demoContent) demoContent.classList.remove('hidden');
+  if (videoWrapper) videoWrapper.classList.remove('active');
+  if (localVideo) {
+    localVideo.pause();
+    localVideo.currentTime = 0; // Rewind to start
+  }
+}
+
+// ---- Indicator Dots Setup ----
 slides.forEach((_, i) => {
   const dot = document.createElement('div');
   dot.classList.add('dot');
   if (i === 0) dot.classList.add('active');
-  dot.addEventListener('click', () => goToSlide(i));
+  dot.addEventListener('click', () => {
+    if (currentIdx === demoSlideIndex && isVideoActive && i !== demoSlideIndex) {
+      resetVideo();
+    }
+    goToSlide(i);
+  });
   dotContainer.appendChild(dot);
 });
 const dots = document.querySelectorAll('.dot');
@@ -400,6 +493,7 @@ function revealNextFeature(){
   return false;
 }
 
+// ---- main state update ----
 function updateState() {
   slides.forEach((slide, i) => {
     slide.classList.remove('active', 'past');
@@ -409,7 +503,9 @@ function updateState() {
   dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIdx));
   prevBtn.disabled = currentIdx === 0;
   nextBtn.disabled = currentIdx === slides.length - 1;
+  
   if (currentIdx === featuresSlideIndex) resetFeatureReveal();
+  if (currentIdx !== demoSlideIndex && isVideoActive) resetVideo();
 }
 
 function goToSlide(idx) {
@@ -418,40 +514,37 @@ function goToSlide(idx) {
   updateState();
 }
 
-// next-arrow: on the Features slide, reveal one box at a time before advancing
-function handleNext(){
+function handleNext() {
   if (currentIdx === featuresSlideIndex && featureRevealStep < featureBoxes.length) {
     revealNextFeature();
     return;
   }
+  if (currentIdx === demoSlideIndex && isVideoActive) {
+    resetVideo();
+  }
   goToSlide(currentIdx + 1);
 }
 
-prevBtn.addEventListener('click', () => goToSlide(currentIdx - 1));
+function handlePrev() {
+  if (currentIdx === demoSlideIndex && isVideoActive) {
+    resetVideo();
+    return;
+  }
+  goToSlide(currentIdx - 1);
+}
+
+prevBtn.addEventListener('click', handlePrev);
 nextBtn.addEventListener('click', handleNext);
 
 window.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowRight' || e.key === ' ') handleNext();
-  if (e.key === 'ArrowLeft') goToSlide(currentIdx - 1);
+  if (e.key === 'ArrowLeft') handlePrev();
 });
 
 updateState();
 
-// smooth fade-out before leaving the page (e.g. "Launch Web Dashboard")
-document.querySelectorAll('.demo-btn').forEach(btn => {
-  btn.addEventListener('click', function(e){
-    const href = this.getAttribute('href');
-    if(!href || this.target === '_blank') return; // let new-tab links behave normally
-    e.preventDefault();
-    document.body.classList.add('page-fade-out');
-    setTimeout(()=>{ window.location.href = href; }, 480);
-  });
-});
-
 /* ============================================================
    ROTATING BRAIN + STARFIELD BACKGROUND
-   (persistent across hero + deck — this is what makes the
-   transition seamless, since there's only ever one background)
 ============================================================ */
 (function(){
   const canvas = document.getElementById('brain-canvas');
@@ -502,11 +595,6 @@ document.querySelectorAll('.demo-btn').forEach(btn => {
     if(Math.abs(brainSDF(x,y,z)) < 0.045) pts.push([x,y,z]);
   }
 
-  // recenter on the point cloud's BOUNDING-BOX center rather than its mean —
-  // the mean is sensitive to sampling-density noise across the 460 random
-  // points (different each load), while the bounding-box center reflects
-  // the actual shape extent and stays consistent — this is what keeps the
-  // brain (and the rings, anchored to world/viewport center) truly aligned
   let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity,minZ=Infinity,maxZ=-Infinity;
   pts.forEach(p=>{
     if(p[0]<minX)minX=p[0]; if(p[0]>maxX)maxX=p[0];
@@ -629,7 +717,6 @@ document.querySelectorAll('.demo-btn').forEach(btn => {
     layer.colorAttr.needsUpdate = true;
   }
 
-  /* ---- hero text choreography, reusing this same animate loop ---- */
   const heroWrap = document.getElementById('heroWrap');
   const heroTitleEl = document.getElementById('heroTitle');
   const heroTaglineEl = document.getElementById('heroTagline');
